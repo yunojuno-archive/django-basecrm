@@ -1,0 +1,3 @@
+include LICENCE.md
+include README.rst
+recursive-include basecrm *.py
