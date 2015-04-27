@@ -9,18 +9,18 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name="basecrm",
+    name="django-basecrm",
     version="0.1",
     packages=[
-        'basecrm',
+        'django_basecrm',
     ],
-    install_requires=['requests'],
+    install_requires=['Django>=1.7', 'requests>=2.6'],
     include_package_data=True,
-    description='Base CRM API client, Python edition.',
+    description='A Django app that connects to the BaseCRM API (v2)',
     long_description=README,
-    url='https://github.com/yunojuno/basecrm-python',
-    author='Hugo Rodger-Brown',
-    author_email='hugo@yunojuno.com',
+    url='https://github.com/yunojuno/django-basecrm',
+    author='Marcel Kornblum',
+    author_email='marcel@yunojuno.com',
     maintainer='Hugo Rodger-Brown',
     maintainer_email='hugo@yunojuno.com',
     classifiers=[
