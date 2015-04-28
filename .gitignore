@@ -2,3 +2,5 @@
 *.pyc
 *.egg-info
 test_db
+build
+dist
