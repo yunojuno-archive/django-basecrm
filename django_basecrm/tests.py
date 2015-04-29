@@ -294,9 +294,10 @@ class ValidationTests(TestCase):
         contact_dict = {
             'id': 32
         }
+        skip_id = False
         suppress = True
         with self.assertRaises(NotImplementedError):
-            utils.validate_contact_dict(operation, contact_dict, suppress)
+            utils.validate_contact_dict(operation, contact_dict, skip_id, suppress)
 
         operation = 'hello'
         contact_dict = {
@@ -304,7 +305,7 @@ class ValidationTests(TestCase):
         }
         suppress = False
         with self.assertRaises(exceptions.BaseCRMValidationError):
-            utils.validate_contact_dict(operation, contact_dict, suppress)
+            utils.validate_contact_dict(operation, contact_dict, skip_id, suppress)
 
         operation = 'GET'
         contact_dict = {
@@ -312,14 +313,14 @@ class ValidationTests(TestCase):
         }
         suppress = False
         with self.assertRaises(exceptions.BaseCRMValidationError):
-            utils.validate_contact_dict(operation, contact_dict, suppress)
+            utils.validate_contact_dict(operation, contact_dict, skip_id, suppress)
 
         operation = utils.UPDATE
         contact_dict = {
             'id': 32
         }
         suppress = 'hello'
-        result = utils.validate_contact_dict(operation, contact_dict, suppress)
+        result = utils.validate_contact_dict(operation, contact_dict, skip_id, suppress)
         self.assertTrue(result)
 
         operation = utils.UPDATE
@@ -327,7 +328,13 @@ class ValidationTests(TestCase):
             'id': 32
         }
         suppress = False
-        result = utils.validate_contact_dict(operation, contact_dict, suppress)
+        result = utils.validate_contact_dict(operation, contact_dict, skip_id, suppress)
+        self.assertTrue(result)
+
+        operation = utils.UPDATE
+        contact_dict = {}
+        skip_id = True
+        result = utils.validate_contact_dict(operation, contact_dict, skip_id, suppress)
         self.assertTrue(result)
 
     def test_validate_deal_dict(self):
@@ -335,16 +342,17 @@ class ValidationTests(TestCase):
         deal_dict = {
             'id': 32
         }
+        skip_id = False
         suppress = True
         with self.assertRaises(NotImplementedError):
-            utils.validate_deal_dict(operation, deal_dict, suppress)
+            utils.validate_deal_dict(operation, deal_dict, skip_id, suppress)
 
         operation = utils.UPDATE
         deal_dict = {
             'id': 32
         }
         suppress = False
-        result = utils.validate_deal_dict(operation, deal_dict, suppress)
+        result = utils.validate_deal_dict(operation, deal_dict, skip_id, suppress)
         self.assertTrue(result)
 
         operation = utils.UPDATE
@@ -352,16 +360,22 @@ class ValidationTests(TestCase):
             'id': 32
         }
         suppress = 'hello'
-        result = utils.validate_deal_dict(operation, deal_dict, suppress)
+        result = utils.validate_deal_dict(operation, deal_dict, skip_id, suppress)
         self.assertTrue(result)
 
+        skip_id = True
+        deal_dict = {}
+        result = utils.validate_deal_dict(operation, deal_dict, skip_id, suppress)
+        self.assertTrue(result)
+
+        skip_id = False
         operation = utils.CREATE
         deal_dict = {
             'name': 'Manhattan Project',
             'contact_id': 23456,
             'custom_fields': {}
         }
-        result = utils.validate_deal_dict(operation, deal_dict, suppress)
+        result = utils.validate_deal_dict(operation, deal_dict, skip_id, suppress)
         self.assertTrue(result)
 
         operation = utils.CREATE
@@ -370,7 +384,7 @@ class ValidationTests(TestCase):
             'contact_id': 'not really an id',
             'custom_fields': 'not_a_dict'
         }
-        result = utils.validate_deal_dict(operation, deal_dict, suppress)
+        result = utils.validate_deal_dict(operation, deal_dict, skip_id, suppress)
         self.assertTrue(result)
 
         operation = utils.CREATE
@@ -380,6 +394,15 @@ class ValidationTests(TestCase):
         with self.assertRaises(exceptions.BaseCRMValidationError):
             utils.validate_deal_dict(operation, deal_dict)
 
+        skip_id = True
+        operation = utils.CREATE
+        deal_dict = {
+            'id': 32
+        }
+        with self.assertRaises(exceptions.BaseCRMValidationError):
+            utils.validate_deal_dict(operation, deal_dict)
+
+        skip_id = False
         operation = utils.CREATE
         deal_dict = {
             'name': 'Manhattan Project',
@@ -739,7 +762,7 @@ class HelperMethodTests(TestCase):
 
         result = helpers.update_contact(id, data)
         self.assertEqual(result, parse.return_value)
-        validate.assert_called_once_with(utils.UPDATE, data)
+        validate.assert_called_once_with(utils.UPDATE, data, skip_id=True)
         request.assert_called_once_with(utils.UPDATE, 'contacts', {'id': id}, data=data)
         parse.assert_called_once_with(request.return_value)
 
@@ -756,7 +779,7 @@ class HelperMethodTests(TestCase):
         validate.side_effect = None
         validate.return_value = False
         result = helpers.update_contact(id, data)
-        validate.assert_called_once_with(utils.UPDATE, data)
+        validate.assert_called_once_with(utils.UPDATE, data, skip_id=True)
         self.assertFalse(request.called)
         self.assertFalse(parse.called)
 
@@ -831,7 +854,7 @@ class HelperMethodTests(TestCase):
 
         result = helpers.update_deal(id, data)
         self.assertEqual(result, parse.return_value)
-        validate.assert_called_once_with(utils.UPDATE, data)
+        validate.assert_called_once_with(utils.UPDATE, data, skip_id=True)
         request.assert_called_once_with(utils.UPDATE, 'deals', {'id': id}, data=data)
         parse.assert_called_once_with(request.return_value)
 
@@ -848,7 +871,7 @@ class HelperMethodTests(TestCase):
         validate.side_effect = None
         validate.return_value = False
         result = helpers.update_deal(id, data)
-        validate.assert_called_once_with(utils.UPDATE, data)
+        validate.assert_called_once_with(utils.UPDATE, data, skip_id=True)
         self.assertFalse(request.called)
         self.assertFalse(parse.called)
 

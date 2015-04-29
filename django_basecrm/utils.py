@@ -150,14 +150,14 @@ def validate_contact_dict(operation, contact_dict, skip_id=False, suppress=False
             msg = (
                 "If 'is_organization'==True, 'first_name' and 'last_name' are all required, "
                 "or if 'is_organization'==False, 'name' is required; "
-                "fields supplied were: %s" % deal_dict.keys()
+                "fields supplied were: %s" % contact_dict.keys()
             )
     elif operation == UPDATE:
         if 'id' in contact_dict or skip_id is True:
             valid = True
         else:
             msg = (
-                "'id' is required; fields supplied were: %s" % deal_dict.keys()
+                "'id' is required; fields supplied were: %s" % contact_dict.keys()
             )
 
     if not valid:
