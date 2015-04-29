@@ -123,6 +123,7 @@ def validate_contact_dict(operation, contact_dict, skip_id=False, suppress=False
     if suppress == True:
         raise NotImplementedError("No validation suppression in place yet")
     valid = False
+    msg = ""
     if operation == CREATE:
         if (
             (  # individual contact requirements
@@ -170,6 +171,7 @@ def validate_deal_dict(operation, deal_dict, skip_id=False, suppress=False):
     if suppress == True:
         raise NotImplementedError("No validation suppression in place yet")
     valid = False
+    msg = ""
     if operation == CREATE:
         if (
             'name' in deal_dict and
