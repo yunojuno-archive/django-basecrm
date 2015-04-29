@@ -119,7 +119,7 @@ def count(response_json):
         return 1  # we're assuming this is a response to an ID request
     return response_json['meta']['count']
 
-def validate_contact_dict(operation, contact_dict, suppress=False):
+def validate_contact_dict(operation, contact_dict, skip_id=False, suppress=False):
     if suppress == True:
         raise NotImplementedError("No validation suppression in place yet")
     valid = False
@@ -146,16 +146,27 @@ def validate_contact_dict(operation, contact_dict, suppress=False):
             )
         ):
             valid = True
+        else:
+            msg = (
+                "If 'is_organization'==True, 'first_name' and 'last_name' are all required, "
+                "or if 'is_organization'==False, 'name' is required; "
+                "fields supplied were: %s" % deal_dict.keys()
+            )
     elif operation == UPDATE:
-        if 'id' in contact_dict:
+        if 'id' in contact_dict or skip_id is True:
             valid = True
+        else:
+            msg = (
+                "'id' is required; fields supplied were: %s" % deal_dict.keys()
+            )
 
     if not valid:
-        raise base_exceptions.BaseCRMValidationError()
+        msg = "Parameters fail BaseCRM API requirements for contact. %s" % msg
+        raise base_exceptions.BaseCRMValidationError(msg)
 
     return True
 
-def validate_deal_dict(operation, deal_dict, suppress=False):
+def validate_deal_dict(operation, deal_dict, skip_id=False, suppress=False):
     if suppress == True:
         raise NotImplementedError("No validation suppression in place yet")
     valid = False
@@ -166,12 +177,22 @@ def validate_deal_dict(operation, deal_dict, suppress=False):
             'custom_fields' in deal_dict
         ):
             valid = True
+        else:
+            msg = (
+                "'name', 'contact_id' and 'custom_fields' are all required; "
+                "fields supplied were: %s" % deal_dict.keys()
+            )
     elif operation == UPDATE:
-        if 'id' in deal_dict:
+        if 'id' in deal_dict or skip_id is True:
             valid = True
+        else:
+            msg = (
+                "'id' is required; fields supplied were: %s" % deal_dict.keys()
+            )
 
     if not valid:
-        raise base_exceptions.BaseCRMValidationError()
+        msg = "Parameters fail BaseCRM API requirements for deal. %s" % msg
+        raise base_exceptions.BaseCRMValidationError(msg)
 
     return True
 

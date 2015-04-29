@@ -39,7 +39,7 @@ def update_contact(id, contact_dict):
     """
     Runs local validation on the given dict and gives passing ones to the API to update
     """
-    if base_api.validate_contact_dict(base_api.UPDATE, contact_dict):
+    if base_api.validate_contact_dict(base_api.UPDATE, contact_dict, skip_id=True):
         resp = base_api.request(base_api.UPDATE, 'contacts', {'id': id}, data=contact_dict)
         return base_api.parse(resp)
     else:
@@ -71,7 +71,7 @@ def update_deal(id, deal_dict):
     """
     Runs local validation on the given dict and gives passing ones to the API to update
     """
-    if base_api.validate_deal_dict(base_api.UPDATE, deal_dict):
+    if base_api.validate_deal_dict(base_api.UPDATE, deal_dict, skip_id=True):
         resp = base_api.request(base_api.UPDATE, 'deals', {'id': id}, data=deal_dict)
         return base_api.parse(resp)
     else:
