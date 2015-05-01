@@ -450,6 +450,7 @@ class UtilityMethodTests(TestCase):
         _app = mock.Mock()
         _app.pipeline = None
         _app.stages = None
+        _app.users = None
         _django_apps.get_app_config.return_value = _app
 
         utils.instantiate_if_necessary()
@@ -461,6 +462,7 @@ class UtilityMethodTests(TestCase):
 
         _app.pipeline = 9877556
         _app.stages = None
+        _app.users = None
 
         utils.instantiate_if_necessary()
         _django_apps.get_app_config.assert_called_once_with('basecrm')
@@ -471,6 +473,18 @@ class UtilityMethodTests(TestCase):
 
         _app.pipeline = 9877556
         _app.stages = ['one', 'two']
+        _app.users = None
+
+        utils.instantiate_if_necessary()
+        _django_apps.get_app_config.assert_called_once_with('basecrm')
+        _app.instantiate_stages.assert_called_once()
+
+        _django_apps.get_app_config.reset_mock()
+        _app.instantiate_stages.reset_mock()
+
+        _app.pipeline = 9877556
+        _app.stages = ['one', 'two']
+        _app.users = ['a', 'b', 'c']
 
         utils.instantiate_if_necessary()
         _django_apps.get_app_config.assert_called_once_with('basecrm')
@@ -949,6 +963,18 @@ class HelperMethodTests(TestCase):
         _apps.get_app_config.assert_called_once_with('basecrm')
         instantiate.assert_called_once()
 
+    @mock.patch('%s.utils.instantiate_if_necessary' % __name__)
+    @mock.patch('%s.helpers.django_apps' % __name__)
+    def test_get_users(self, _apps, instantiate):
+        _app_conf = mock.Mock()
+        _app_conf.users = [{'id': 6456, 'name': 'Albert'}, {'id': 6577, 'name': 'Bertie'}]
+        _apps.get_app_config.return_value = _app_conf
+
+        result = helpers.get_users()
+        self.assertEqual(result, _app_conf.users)
+        _apps.get_app_config.assert_called_once_with('basecrm')
+        instantiate.assert_called_once()
+
     @mock.patch('%s.utils.request' % __name__)
     @mock.patch('%s.utils.parse' % __name__)
     @mock.patch('%s.utils.count' % __name__)
@@ -1003,6 +1029,27 @@ class HelperMethodTests(TestCase):
         result = helpers.get_stages_from_api(id=456, hello='world')
         self.assertEqual(result, parse.return_value)
         request.assert_called_once_with(utils.RETRIEVE, 'stages', {'id': 456, 'hello': 'world'})
+        parse.assert_called_once_with(request.return_value)
+
+    @mock.patch('%s.utils.request' % __name__)
+    @mock.patch('%s.utils.parse' % __name__)
+    def test_get_users_from_api(self, parse, request):
+        request.return_value = {
+            'items':[{'id':23, 'name':'Albert'},{'id':99, 'name':'Bertie'}],
+            'meta': {'count': 2}
+        }
+        parse.return_value = [{'id':23, 'name':'Albert'},{'id':99, 'name':'Bertie'}]
+
+        result = helpers.get_users_from_api()
+        self.assertEqual(result, parse.return_value)
+        request.assert_called_once_with(utils.RETRIEVE, 'users', {})
+        parse.assert_called_once_with(request.return_value)
+
+        request.reset_mock()
+        parse.reset_mock()
+        result = helpers.get_users_from_api(id=456, hello='world')
+        self.assertEqual(result, parse.return_value)
+        request.assert_called_once_with(utils.RETRIEVE, 'users', {'id': 456, 'hello': 'world'})
         parse.assert_called_once_with(request.return_value)
 
 
@@ -1272,37 +1319,44 @@ class SerializerTests(TestCase):
 class AppMethodTests(TestCase):
 
     @mock.patch('%s.apps.base_settings' % __name__)
-    @mock.patch('%s.apps.BaseCRMConfig.instantiate_stages' % __name__)
-    def test_ready(self, instantiate_stages, settings):
+    @mock.patch('%s.apps.BaseCRMConfig.instantiate_objects' % __name__)
+    def test_ready(self, instantiate_objects, settings):
         base_app = django_apps.get_app_config('django_basecrm')
 
         settings.BASECRM_INSTANTIATE_ON_START = False
         result = base_app.ready()
-        self.assertFalse(instantiate_stages.called)
+        self.assertFalse(instantiate_objects.called)
 
         settings.BASECRM_INSTANTIATE_ON_START = True
         result = base_app.ready()
-        instantiate_stages.assert_called_once()
+        instantiate_objects.assert_called_once()
 
     @mock.patch('%s.apps.get_stages_from_api' % __name__)
     @mock.patch('%s.apps.get_pipelines_from_api' % __name__)
-    def test_instantiate_stages(self, get_pipelines, get_stages):
+    @mock.patch('%s.apps.get_users_from_api' % __name__)
+    def test_instantiate_objects(self, get_users, get_pipelines, get_stages):
         base_app = django_apps.get_app_config('django_basecrm')
         get_pipelines.return_value = [{'id': 'one'}, {'id': 'two'}, {'id': 'three'}]
         get_stages.return_value = ['A', 'B', 'C']
+        get_users.return_value = [1, 2, 3]
 
-        base_app.instantiate_stages()
+        base_app.instantiate_objects()
         self.assertEqual(base_app.pipeline, {'id': 'one'})
         self.assertEqual(base_app.stages, ['A', 'B', 'C'])
+        self.assertEqual(base_app.users, [1, 2, 3])
         get_pipelines.assert_called_once()
         get_stages.assert_called_once_with(pipeline_id='one')
+        get_users.assert_called_once()
 
         get_pipelines.reset_mock()
         get_stages.reset_mock()
+        get_users.reset_mock()
         get_pipelines.return_value = {'id': 'two'}
 
-        base_app.instantiate_stages()
+        base_app.instantiate_objects()
         self.assertEqual(base_app.pipeline, {'id': 'two'})
         self.assertEqual(base_app.stages, ['A', 'B', 'C'])
+        self.assertEqual(base_app.users, [1, 2, 3])
         get_pipelines.assert_called_once()
         get_stages.assert_called_once_with(pipeline_id='two')
+        get_users.assert_called_once()

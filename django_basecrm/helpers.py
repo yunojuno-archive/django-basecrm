@@ -114,6 +114,14 @@ def get_stages():
     base_api.instantiate_if_necessary()
     return django_apps.get_app_config('basecrm').stages
 
+def get_users():
+    """
+    Note that we don't expect these to change often, so we are essentially caching this for the
+    duration (there's no cachebusting)
+    """
+    base_api.instantiate_if_necessary()
+    return django_apps.get_app_config('basecrm').users
+
 def get_pipelines_from_api(**kwargs):
     """
     This is the API method, called by the appConfig.instantiate method
@@ -128,4 +136,11 @@ def get_stages_from_api(**kwargs):
     This is the API method, called by the appConfig.instantiate method
     """
     resp = base_api.request(base_api.RETRIEVE, 'stages', kwargs)
+    return base_api.parse(resp)
+
+def get_users_from_api(**kwargs):
+    """
+    This is the API method, called by the appConfig.instantiate method
+    """
+    resp = base_api.request(base_api.RETRIEVE, 'users', kwargs)
     return base_api.parse(resp)
