@@ -104,7 +104,7 @@ def get_pipelines():
     duration (there's no cachebusting)
     """
     base_api.instantiate_if_necessary()
-    return django_apps.get_app_config('basecrm').pipeline
+    return django_apps.get_app_config('django_basecrm').pipeline
 
 def get_stages():
     """
@@ -112,7 +112,7 @@ def get_stages():
     duration (there's no cachebusting)
     """
     base_api.instantiate_if_necessary()
-    return django_apps.get_app_config('basecrm').stages
+    return django_apps.get_app_config('django_basecrm').stages
 
 def get_users():
     """
@@ -120,7 +120,7 @@ def get_users():
     duration (there's no cachebusting)
     """
     base_api.instantiate_if_necessary()
-    return django_apps.get_app_config('basecrm').users
+    return django_apps.get_app_config('django_basecrm').users
 
 def get_pipelines_from_api(**kwargs):
     """

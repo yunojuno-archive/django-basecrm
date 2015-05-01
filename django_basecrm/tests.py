@@ -446,6 +446,31 @@ class ValidationTests(TestCase):
 class UtilityMethodTests(TestCase):
 
     @mock.patch('%s.utils.django_apps' % __name__)
+    @mock.patch('%s.utils.instantiate_if_necessary' % __name__)
+    def test_get_stage_ids(self, _instantiate, _django_apps):
+        _app = mock.Mock()
+        _app.stages = [{'id': 8888, 'name': 'New'}, {'id': 9999, 'name': 'In Progress'}]
+        _django_apps.get_app_config.return_value = _app
+
+        result = utils.get_stage_ids()
+        self.assertEqual(result, [8888, 9999])
+        _instantiate.assert_called_once()
+        _django_apps.get_app_config.assert_called_once_with('django_basecrm')
+
+    @mock.patch('%s.utils.django_apps' % __name__)
+    @mock.patch('%s.utils.instantiate_if_necessary' % __name__)
+    def test_get_user_ids(self, _instantiate, _django_apps):
+        _app = mock.Mock()
+        _app.users = [{'id': 8, 'name': 'Albert'}, {'id': 9, 'name': 'Berties'}]
+        _django_apps.get_app_config.return_value = _app
+
+        result = utils.get_user_ids()
+        self.assertEqual(result, [8, 9])
+        _instantiate.assert_called_once()
+        _django_apps.get_app_config.assert_called_once_with('django_basecrm')
+
+
+    @mock.patch('%s.utils.django_apps' % __name__)
     def test_instantiate_if_necessary(self, _django_apps):
         _app = mock.Mock()
         _app.pipeline = None
@@ -454,7 +479,7 @@ class UtilityMethodTests(TestCase):
         _django_apps.get_app_config.return_value = _app
 
         utils.instantiate_if_necessary()
-        _django_apps.get_app_config.assert_called_once_with('basecrm')
+        _django_apps.get_app_config.assert_called_once_with('django_basecrm')
         _app.instantiate_stages.assert_called_once()
 
         _django_apps.get_app_config.reset_mock()
@@ -465,7 +490,7 @@ class UtilityMethodTests(TestCase):
         _app.users = None
 
         utils.instantiate_if_necessary()
-        _django_apps.get_app_config.assert_called_once_with('basecrm')
+        _django_apps.get_app_config.assert_called_once_with('django_basecrm')
         _app.instantiate_stages.assert_called_once()
 
         _django_apps.get_app_config.reset_mock()
@@ -476,7 +501,7 @@ class UtilityMethodTests(TestCase):
         _app.users = None
 
         utils.instantiate_if_necessary()
-        _django_apps.get_app_config.assert_called_once_with('basecrm')
+        _django_apps.get_app_config.assert_called_once_with('django_basecrm')
         _app.instantiate_stages.assert_called_once()
 
         _django_apps.get_app_config.reset_mock()
@@ -487,7 +512,7 @@ class UtilityMethodTests(TestCase):
         _app.users = ['a', 'b', 'c']
 
         utils.instantiate_if_necessary()
-        _django_apps.get_app_config.assert_called_once_with('basecrm')
+        _django_apps.get_app_config.assert_called_once_with('django_basecrm')
         self.assertFalse(_app.instantiate_stages.called)
 
     def test_count(self):
@@ -948,7 +973,7 @@ class HelperMethodTests(TestCase):
 
         result = helpers.get_pipelines()
         self.assertEqual(result, _app_conf.pipeline)
-        _apps.get_app_config.assert_called_once_with('basecrm')
+        _apps.get_app_config.assert_called_once_with('django_basecrm')
         instantiate.assert_called_once()
 
     @mock.patch('%s.utils.instantiate_if_necessary' % __name__)
@@ -960,7 +985,7 @@ class HelperMethodTests(TestCase):
 
         result = helpers.get_stages()
         self.assertEqual(result, _app_conf.stages)
-        _apps.get_app_config.assert_called_once_with('basecrm')
+        _apps.get_app_config.assert_called_once_with('django_basecrm')
         instantiate.assert_called_once()
 
     @mock.patch('%s.utils.instantiate_if_necessary' % __name__)
@@ -972,7 +997,7 @@ class HelperMethodTests(TestCase):
 
         result = helpers.get_users()
         self.assertEqual(result, _app_conf.users)
-        _apps.get_app_config.assert_called_once_with('basecrm')
+        _apps.get_app_config.assert_called_once_with('django_basecrm')
         instantiate.assert_called_once()
 
     @mock.patch('%s.utils.request' % __name__)

@@ -118,7 +118,20 @@ class AbstractModelSerializer(object):
                         # let's use the mapped value from the instance
                         val = instance_val
 
-        return val
+        # confirm that whatever we've ended up with is safe to set
+        if self._validate_field(field_name, val):
+            return val
+        else:
+            return None
+
+    def _validate_field(self, field_name, field_value):
+        """
+        Ensures that e.g. owner_id value set is valid for this account; setting an invalid one can
+        break the integration as BaseCRM API does not handle this gracefully.
+
+        This abstract method exists to be overridden on concrete serializers
+        """
+        return True
 
 
     class Meta(object):
@@ -161,6 +174,15 @@ class ContactModelSerializer(AbstractModelSerializer):
         'id'
     ]
 
+    def _validate_field(self, field_name, field_value):
+        if field_value is None:
+            return True
+
+        if field_name == 'owner_id' and field_value not in base_api.get_user_ids():
+            return False
+
+        return super(ContactModelSerializer, self)._validate_field(field_name, field_value)
+
 
 class DealModelSerializer(AbstractModelSerializer):
     """
@@ -187,3 +209,15 @@ class DealModelSerializer(AbstractModelSerializer):
         'id',
         'organization_id'
     ]
+
+    def _validate_field(self, field_name, field_value):
+        if field_value is None:
+            return True
+
+        if field_name == 'owner_id' and field_value not in base_api.get_user_ids():
+            return False
+
+        if field_name == 'stage_id' and field_value not in base_api.get_stage_ids():
+            return False
+
+        return super(DealModelSerializer, self)._validate_field(field_name, field_value)
