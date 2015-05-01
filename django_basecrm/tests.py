@@ -469,7 +469,6 @@ class UtilityMethodTests(TestCase):
         _instantiate.assert_called_once()
         _django_apps.get_app_config.assert_called_once_with('django_basecrm')
 
-
     @mock.patch('%s.utils.django_apps' % __name__)
     def test_instantiate_if_necessary(self, _django_apps):
         _app = mock.Mock()
@@ -1340,6 +1339,60 @@ class SerializerTests(TestCase):
         self.assertEqual(self.serialized_deal.read_only_fields, ['id', 'organization_id'])
         self.assertEqual(self.serialized_deal.Meta.model, self.instance.__class__)
 
+    def test_validate_field(self):
+        result = self.serialized_abstract_object._validate_field('any', 'val')
+        self.assertTrue(result)
+
+    @mock.patch('%s.serializers.base_api' % __name__)
+    def test_contact_validate_field(self, utils):
+        utils.get_user_ids.return_value = [111, 222, 333, 444]
+
+        result = self.serialized_contact._validate_field('any', True)
+        self.assertTrue(result)
+
+        result = self.serialized_contact._validate_field('owner_id', None)
+        self.assertTrue(result)
+
+        result = self.serialized_contact._validate_field('owner_id', True)
+        self.assertFalse(result)
+
+        result = self.serialized_contact._validate_field('owner_id', 777)
+        self.assertFalse(result)
+
+        result = self.serialized_contact._validate_field('owner_id', 444)
+        self.assertTrue(result)
+
+    @mock.patch('%s.serializers.base_api' % __name__)
+    def test_deal_validate_field(self, utils):
+        utils.get_user_ids.return_value = [111, 222, 333, 444]
+        utils.get_stage_ids.return_value = [666, 777, 888, 999]
+
+        result = self.serialized_deal._validate_field('any', True)
+        self.assertTrue(result)
+
+        result = self.serialized_deal._validate_field('owner_id', None)
+        self.assertTrue(result)
+
+        result = self.serialized_deal._validate_field('owner_id', True)
+        self.assertFalse(result)
+
+        result = self.serialized_deal._validate_field('owner_id', 777)
+        self.assertFalse(result)
+
+        result = self.serialized_deal._validate_field('owner_id', 444)
+        self.assertTrue(result)
+
+        result = self.serialized_deal._validate_field('owner_id', None)
+        self.assertTrue(result)
+
+        result = self.serialized_deal._validate_field('stage_id', True)
+        self.assertFalse(result)
+
+        result = self.serialized_deal._validate_field('stage_id', 444)
+        self.assertFalse(result)
+
+        result = self.serialized_deal._validate_field('stage_id', 777)
+        self.assertTrue(result)
 
 class AppMethodTests(TestCase):
 
