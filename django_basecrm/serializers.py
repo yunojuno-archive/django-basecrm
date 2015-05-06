@@ -8,7 +8,7 @@ from django.db.models.loading import get_model
 from . import (
     utils as base_api,
     exceptions as base_exceptions,
-    settings as base_settings
+    helpers as base_helpers
 )
 
 
@@ -178,7 +178,7 @@ class ContactModelSerializer(AbstractModelSerializer):
         if field_value is None:
             return True
 
-        if field_name == 'owner_id' and field_value not in base_api.get_user_ids():
+        if field_name == 'owner_id' and field_value not in base_helpers.get_user_ids():
             return False
 
         return super(ContactModelSerializer, self)._validate_field(field_name, field_value)
@@ -214,10 +214,10 @@ class DealModelSerializer(AbstractModelSerializer):
         if field_value is None:
             return True
 
-        if field_name == 'owner_id' and field_value not in base_api.get_user_ids():
+        if field_name == 'owner_id' and field_value not in base_helpers.get_user_ids():
             return False
 
-        if field_name == 'stage_id' and field_value not in base_api.get_stage_ids():
+        if field_name == 'stage_id' and field_value not in base_helpers.get_stage_ids():
             return False
 
         return super(DealModelSerializer, self)._validate_field(field_name, field_value)

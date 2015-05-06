@@ -1365,9 +1365,9 @@ class SerializerTests(TestCase):
         result = self.serialized_abstract_object._validate_field('any', 'val')
         self.assertTrue(result)
 
-    @mock.patch('%s.serializers.base_api' % __name__)
-    def test_contact_validate_field(self, utils):
-        utils.get_user_ids.return_value = [111, 222, 333, 444]
+    @mock.patch('%s.serializers.base_helpers' % __name__)
+    def test_contact_validate_field(self, helpers):
+        helpers.get_user_ids.return_value = [111, 222, 333, 444]
 
         result = self.serialized_contact._validate_field('any', True)
         self.assertTrue(result)
@@ -1384,10 +1384,10 @@ class SerializerTests(TestCase):
         result = self.serialized_contact._validate_field('owner_id', 444)
         self.assertTrue(result)
 
-    @mock.patch('%s.serializers.base_api' % __name__)
-    def test_deal_validate_field(self, utils):
-        utils.get_user_ids.return_value = [111, 222, 333, 444]
-        utils.get_stage_ids.return_value = [666, 777, 888, 999]
+    @mock.patch('%s.serializers.base_helpers' % __name__)
+    def test_deal_validate_field(self, helpers):
+        helpers.get_user_ids.return_value = [111, 222, 333, 444]
+        helpers.get_stage_ids.return_value = [666, 777, 888, 999]
 
         result = self.serialized_deal._validate_field('any', True)
         self.assertTrue(result)
@@ -1415,6 +1415,7 @@ class SerializerTests(TestCase):
 
         result = self.serialized_deal._validate_field('stage_id', 777)
         self.assertTrue(result)
+
 
 class AppMethodTests(TestCase):
 

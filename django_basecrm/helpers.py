@@ -6,7 +6,6 @@ from . import (
     utils as base_api,
     exceptions as base_exceptions,
     settings as base_settings,
-    serializers as base_serializers,
 )
 
 """
