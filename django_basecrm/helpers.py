@@ -5,6 +5,7 @@ from django.apps import apps as django_apps
 from . import (
     utils as base_api,
     exceptions as base_exceptions,
+    settings as base_settings,
     serializers as base_serializers,
 )
 
@@ -103,24 +104,45 @@ def get_pipelines():
     Note that we don't expect these to change often, so we are essentially caching this for the
     duration (there's no cachebusting)
     """
-    base_api.instantiate_if_necessary()
-    return django_apps.get_app_config('django_basecrm').pipeline
+    if base_settings.BASECRM_CACHE_PIPELINE:
+        app_conf = django_apps.get_app_config('django_basecrm')
+        app_conf.instantiate_pipeline()
+        pipeline = app_conf.pipeline
+    else:
+        pipeline = get_pipelines_from_api()
+    return pipeline
 
 def get_stages():
     """
     Note that we don't expect these to change often, so we are essentially caching this for the
     duration (there's no cachebusting)
     """
-    base_api.instantiate_if_necessary()
-    return django_apps.get_app_config('django_basecrm').stages
+    if base_settings.BASECRM_CACHE_STAGES:
+        app_conf = django_apps.get_app_config('django_basecrm')
+        app_conf.instantiate_stages()
+        stages = app_conf.stages
+    else:
+        stages = get_stages_from_api()
+    return stages
 
 def get_users():
     """
     Note that we don't expect these to change often, so we are essentially caching this for the
     duration (there's no cachebusting)
     """
-    base_api.instantiate_if_necessary()
-    return django_apps.get_app_config('django_basecrm').users
+    if base_settings.BASECRM_CACHE_USERS:
+        app_conf = django_apps.get_app_config('django_basecrm')
+        app_conf.instantiate_users()
+        users = app_conf.users
+    else:
+        users = get_users_from_api()
+    return users
+
+def get_user_ids():
+    return [x['id'] for x in get_users()]
+
+def get_stage_ids():
+    return [x['id'] for x in get_stages()]
 
 def get_pipelines_from_api(**kwargs):
     """

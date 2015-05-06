@@ -200,18 +200,7 @@ def validate_deal_dict(operation, deal_dict, skip_id=False, suppress=False):
 
 def instantiate_if_necessary():
     base_app = django_apps.get_app_config('django_basecrm')
-    if base_app.pipeline is None or base_app.stages is None or base_app.users is None:
-        base_app.instantiate_objects()
-
-def get_user_ids():
-    instantiate_if_necessary()
-    users = django_apps.get_app_config('django_basecrm').users
-    return [x['id'] for x in users]
-
-def get_stage_ids():
-    instantiate_if_necessary()
-    stages = django_apps.get_app_config('django_basecrm').stages
-    return [x['id'] for x in stages]
+    base_app.instantiate_objects()
 
 
 ###########################################################################
