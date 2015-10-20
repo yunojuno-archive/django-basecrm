@@ -98,6 +98,27 @@ def get_notes(resource_type=None, resource_id=None, **kwargs):
     resp = base_api.request(base_api.RETRIEVE, 'notes', kwargs)
     return base_api.parse(resp)
 
+def create_note(resource_type, resource_id, content):
+    """
+    Posts to the notes endpoint of the API.
+    """
+    if resource_type is None:
+        raise base_exceptions.BaseCRMValidationError('Resource type required')
+    elif resource_type not in ['lead', 'contact', 'deal']:
+        raise base_exceptions.BaseCRMValidationError('Invalid resource type')
+
+    if resource_id is None:
+        raise base_exceptions.BaseCRMValidationError('Resource ID required')
+
+    note_dict = {
+        'resource_type': resource_type,
+        'resource_id': resource_id,
+        'content': content
+    }
+
+    resp = base_api.request(base_api.CREATE, 'notes', data=note_dict)
+    return base_api.parse(resp)
+
 def get_pipelines():
     """
     Note that we don't expect these to change often, so we are essentially caching this for the

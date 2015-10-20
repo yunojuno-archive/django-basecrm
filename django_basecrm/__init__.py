@@ -9,6 +9,7 @@ from helpers import (
     get_stages,
     create_contact,
     create_deal,
+    create_note,
     update_contact,
     update_deal,
 )

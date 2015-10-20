@@ -939,6 +939,40 @@ class HelperMethodTests(TestCase):
         with self.assertRaises(exceptions.BaseCRMValidationError):
             helpers.get_notes(resource_type)
 
+    @mock.patch('%s.utils.request' % __name__)
+    @mock.patch('%s.utils.parse' % __name__)
+    def test_create_note(self, parse, request):
+        request.return_value = {
+            'items':[{'id':23, 'content':'hello'},{'id':99, 'content':'world'}],
+            'meta': {'count': 2}
+        }
+        parse.return_value = [{'id':23, 'content':'hello'},{'id':99, 'content':'world'}]
+        resource_type = 'contact'
+        resource_id = 55
+        content = "Hi, this is å t€st note"
+        data = {
+            'resource_type': resource_type,
+            'resource_id': resource_id,
+            'content': content
+        }
+
+        with self.assertRaises(exceptions.BaseCRMValidationError):
+            helpers.create_note(None, resource_id, content)
+
+        with self.assertRaises(exceptions.BaseCRMValidationError):
+            helpers.create_note('foo', resource_id, content)
+
+        with self.assertRaises(exceptions.BaseCRMValidationError):
+            helpers.create_note(5577, resource_id, content)
+
+        with self.assertRaises(exceptions.BaseCRMValidationError):
+            helpers.create_note(resource_type, None, content)
+
+        result = helpers.create_note(resource_type, resource_id, content)
+        self.assertEqual(result, parse.return_value)
+        request.assert_called_once_with(utils.CREATE, 'notes', data=data)
+        parse.assert_called_once_with(request.return_value)
+
     @mock.patch('%s.utils.instantiate_if_necessary' % __name__)
     @mock.patch('%s.helpers.django_apps' % __name__)
     def test_get_pipelines(self, _apps, instantiate):
