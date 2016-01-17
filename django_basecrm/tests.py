@@ -889,6 +889,113 @@ class HelperMethodTests(TestCase):
         self.assertFalse(request.called)
         self.assertFalse(parse.called)
 
+
+    @mock.patch('%s.utils.request' % __name__)
+    @mock.patch('%s.utils.parse' % __name__)
+    def test_get_leads(self, parse, request):
+        request.return_value = {
+            'items':[{'id':23, 'name':'hello'},{'id':99, 'name':'world'}],
+            'meta': {'count': 2}
+        }
+        parse.return_value = [{'id':23, 'name':'hello'},{'id':99, 'name':'world'}]
+
+        result = helpers.get_leads()
+        self.assertEqual(result, parse.return_value)
+        request.assert_called_once_with(utils.RETRIEVE, 'leads', {})
+        parse.assert_called_once_with(request.return_value)
+
+        request.reset_mock()
+        parse.reset_mock()
+        result = helpers.get_leads(id=456, hello='world')
+        self.assertEqual(result, parse.return_value)
+        request.assert_called_once_with(utils.RETRIEVE, 'leads', {'id': 456, 'hello': 'world'})
+        parse.assert_called_once_with(request.return_value)
+
+    @mock.patch('%s.utils.validate_lead_dict' % __name__)
+    @mock.patch('%s.utils.request' % __name__)
+    @mock.patch('%s.utils.parse' % __name__)
+    def test_create_lead(self, parse, request, validate):
+        request.return_value = {
+            'data': {
+                'id': 23,
+                'last_name': 'Бортников',
+                'organization_name': 'Федеральная Служба Безопасности Российской Федерации'
+            },
+            'meta': {
+                'count': 1
+             }
+        }
+        parse.return_value = {
+            'id': 23,
+            'last_name': 'Бортников',
+            'organization_name': 'Федеральная Служба Безопасности Российской Федерации'
+        }
+        validate.return_value = True
+        data = {
+            'id': 999,
+            'last_name': 'Бортников',
+            'organization_name': 'Федеральная Служба Безопасности Российской Федерации'
+        }
+
+        result = helpers.create_lead(data)
+        self.assertEqual(result, parse.return_value)
+        validate.assert_called_once_with(utils.CREATE, data)
+        request.assert_called_once_with(utils.CREATE, 'leads', None, data=data)
+        parse.assert_called_once_with(request.return_value)
+
+        request.reset_mock()
+        parse.reset_mock()
+        validate.reset_mock()
+        validate.side_effect = exceptions.BaseCRMValidationError()
+        with self.assertRaises(exceptions.BaseCRMValidationError):
+            helpers.create_lead(data)
+
+        request.reset_mock()
+        parse.reset_mock()
+        validate.reset_mock()
+        validate.side_effect = None
+        validate.return_value = False
+        result = helpers.create_lead(data)
+        validate.assert_called_once_with(utils.CREATE, data)
+        self.assertFalse(request.called)
+        self.assertFalse(parse.called)
+
+    @mock.patch('%s.utils.validate_lead_dict' % __name__)
+    @mock.patch('%s.utils.request' % __name__)
+    @mock.patch('%s.utils.parse' % __name__)
+    def test_update_lead(self, parse, request, validate):
+        request.return_value = {
+            'data':{'id':23, 'name':'Manhattan Project'},
+            'meta': {'count': 1}
+        }
+        parse.return_value = {'id':23, 'name':'Manhattan Project'}
+        validate.return_value = True
+        data = {'id': 999, 'name': 'Manhattan Project'}
+        id = 23
+
+        result = helpers.update_lead(id, data)
+        self.assertEqual(result, parse.return_value)
+        validate.assert_called_once_with(utils.UPDATE, data, skip_id=True)
+        request.assert_called_once_with(utils.UPDATE, 'leads', {'id': id}, data=data)
+        parse.assert_called_once_with(request.return_value)
+
+        request.reset_mock()
+        parse.reset_mock()
+        validate.reset_mock()
+        validate.side_effect = exceptions.BaseCRMValidationError()
+        with self.assertRaises(exceptions.BaseCRMValidationError):
+            helpers.update_lead(id, data)
+
+        request.reset_mock()
+        parse.reset_mock()
+        validate.reset_mock()
+        validate.side_effect = None
+        validate.return_value = False
+        result = helpers.update_lead(id, data)
+        validate.assert_called_once_with(utils.UPDATE, data, skip_id=True)
+        self.assertFalse(request.called)
+        self.assertFalse(parse.called)
+
     @mock.patch('%s.utils.request' % __name__)
     @mock.patch('%s.utils.parse' % __name__)
     def test_get_notes(self, parse, request):
