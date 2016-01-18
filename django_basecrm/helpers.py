@@ -78,6 +78,41 @@ def update_deal(id, deal_dict):
         # validation failed but the exception was suppressed
         pass
 
+
+def get_leads(**kwargs):
+    """
+    Hits the API for leads. If given an 'id' kwarg it will request that specific ID lead;
+    any other kwargs will be passed to the API as GET params; e.g. page=2.
+
+    Returns a list of lead dicts unless the 'id' param is set in which case it returns a dict
+    """
+    resp = base_api.request(base_api.RETRIEVE, 'leads', kwargs)
+    return base_api.parse(resp)
+
+
+def create_lead(lead_dict):
+    """
+    Runs local validation on the given dict and gives passing ones to the API to create
+    """
+    if base_api.validate_lead_dict(base_api.CREATE, lead_dict):
+        resp = base_api.request(base_api.CREATE, 'leads', None, data=lead_dict)
+        return base_api.parse(resp)
+    else:
+        # validation failed but the exception was suppressed
+        pass
+
+
+def update_lead(id, lead_dict):
+    """
+    Runs local validation on the given dict and gives passing ones to the API to update
+    """
+    if base_api.validate_lead_dict(base_api.UPDATE, lead_dict, skip_id=True):
+        resp = base_api.request(base_api.UPDATE, 'leads', {'id': id}, data=lead_dict)
+        return base_api.parse(resp)
+    else:
+        # validation failed but the exception was suppressed
+        pass
+
 def get_notes(resource_type=None, resource_id=None, **kwargs):
     """
     Hits the API for notes. If resource_type and/or resource_id are

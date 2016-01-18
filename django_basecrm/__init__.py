@@ -7,9 +7,12 @@ from helpers import (
     get_notes,
     get_pipelines,
     get_stages,
+    get_leads,
     create_contact,
     create_deal,
     create_note,
+    create_lead,
     update_contact,
     update_deal,
+    update_lead
 )

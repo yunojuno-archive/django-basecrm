@@ -198,6 +198,36 @@ def validate_deal_dict(operation, deal_dict, skip_id=False, suppress=False):
 
     return True
 
+def validate_lead_dict(operation, lead_dict, skip_id=False, suppress=False):
+    if suppress == True:
+        raise NotImplementedError("No validation suppression in place yet")
+    valid = False
+    msg = ""
+    if operation == CREATE:
+        if (
+            'last_name' in lead_dict and
+            'organization_name' in lead_dict
+        ):
+            valid = True
+        else:
+            msg = (
+                "'last_name' and 'organization_name' are all required; "
+                "fields supplied were: %s" % lead_dict.keys()
+            )
+    elif operation == UPDATE:
+        if 'id' in lead_dict or skip_id is True:
+            valid = True
+        else:
+            msg = (
+                "'id' is required; fields supplied were: %s" % lead_dict.keys()
+            )
+
+    if not valid:
+        msg = "Parameters fail BaseCRM API requirements for deal. %s" % msg
+        raise base_exceptions.BaseCRMValidationError(msg)
+
+    return True
+
 def instantiate_if_necessary():
     base_app = django_apps.get_app_config('django_basecrm')
     base_app.instantiate_objects()

@@ -1,6 +1,7 @@
 .tox
-*.pyc
+*.py[co]
 *.egg-info
 test_db
 build
 dist
+.idea
