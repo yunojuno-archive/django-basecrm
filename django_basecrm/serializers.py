@@ -3,7 +3,6 @@ import types
 
 from django.apps import apps
 from django.db.models.base import ModelBase
-from django.db.models.loading import get_model
 
 from . import (
     utils as base_api,
@@ -31,7 +30,7 @@ class AbstractModelSerializer(object):
             )
         if isinstance(self.Meta.model, basestring):
             try:
-                self.Meta.model = get_model ( *self.Meta.model.split('.',1) )
+                self.Meta.model = apps.get_model ( *self.Meta.model.split('.',1) )
             except:
                 raise base_exceptions.BaseCRMConfigurationError(
                     "The model on the Meta inner class could not be derived from the string given"
