@@ -2,6 +2,7 @@
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
+
 class BaseCRMAPIUnauthorized(Exception):
     default_detail = _(u'Required access token is missing, malformed, expired, or invalid.')
 
@@ -13,6 +14,7 @@ class BaseCRMAPIUnauthorized(Exception):
 
     def __str__(self):
         return self.detail
+
 
 class BaseCRMBadParameterFormat(Exception):
     default_detail = _(
@@ -28,6 +30,7 @@ class BaseCRMBadParameterFormat(Exception):
 
     def __str__(self):
         return self.detail
+
 
 class BaseCRMValidationError(Exception):
     default_detail = _(
@@ -87,4 +90,3 @@ class BaseCRMNoResult(Exception):
 
     def __str__(self):
         return self.detail
-
