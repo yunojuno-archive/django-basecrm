@@ -12,7 +12,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name="django-basecrm",
-    version="0.4.0-dev",
+    version="0.4.0",
     packages=find_packages(),
     install_requires=REQUIREMENTS,
     include_package_data=True,
