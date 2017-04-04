@@ -3,10 +3,17 @@ import mock
 import types
 
 from django.apps import apps as django_apps
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.db.models.base import ModelBase
 
-from . import apps, exceptions, helpers, serializers, utils
+from . import (
+    apps,  # noqa used for patching
+    exceptions,
+    helpers,
+    serializers,
+    settings,
+    utils
+)
 
 
 class RequestWrapperTests(TestCase):
@@ -709,7 +716,7 @@ class HelperMethodTests(TestCase):
     @mock.patch('%s.utils.parse' % __name__)
     def test_get_contacts(self, parse, request):
         request.return_value = {
-            'items':[{'id':23, 'name':'hello'},{'id':99, 'name':'world'}],
+            'items':[{'id': 23, 'name':'hello'},{'id':99, 'name':'world'}],
             'meta': {'count': 2}
         }
         parse.return_value = [{'id':23, 'name':'hello'},{'id':99, 'name':'world'}]
@@ -731,7 +738,7 @@ class HelperMethodTests(TestCase):
     @mock.patch('%s.utils.parse' % __name__)
     def test_create_contact(self, parse, request, validate):
         request.return_value = {
-            'data':{'id':23, 'name':'M deLaurentiis'},
+            'data':{'id': 23, 'name': 'M deLaurentiis'},
             'meta': {'count': 1}
         }
         parse.return_value = {'id':23, 'name':'M deLaurentiis'}
@@ -1144,7 +1151,10 @@ class HelperMethodTests(TestCase):
         self.assertEqual(result, get_from_api.return_value)
         self.assertFalse(_apps.get_app_config.called)
         self.assertFalse(instantiate.called)
-        get_from_api.assert_called_once()
+        get_from_api.assert_called_once_with()
+
+        result = helpers.get_users(per_page=999, status='foo')
+        get_from_api.assert_called_with(per_page=999, status='foo')
 
     @mock.patch('%s.helpers.get_stages' % __name__)
     def test_get_stage_ids(self, get_stages):
@@ -1566,16 +1576,16 @@ class AppMethodTests(TestCase):
         self.base_app.stages = None
         self.base_app.pipeline = None
 
-    @mock.patch('%s.apps.base_settings' % __name__)
+    @mock.patch('%s.apps.settings' % __name__)
     @mock.patch('%s.apps.BaseCRMConfig.instantiate_objects' % __name__)
-    def test_ready(self, instantiate_objects, settings):
-        settings.BASECRM_CACHE_AT_STARTUP = False
-        result = self.base_app.ready()
-        self.assertFalse(instantiate_objects.called)
+    def test_ready(self, instantiate_objects, app_settings):
+        app_settings.BASECRM_CACHE_AT_STARTUP = False
+        self.base_app.ready()
+        self.assertEqual(instantiate_objects.call_count, 0)
 
-        settings.BASECRM_CACHE_AT_STARTUP = True
-        result = self.base_app.ready()
-        instantiate_objects.assert_called_once()
+        app_settings.BASECRM_CACHE_AT_STARTUP = True
+        self.base_app.ready()
+        instantiate_objects.assert_called_once_with()
 
     @mock.patch('%s.apps.get_pipelines_from_api' % __name__)
     def test_instantiate_pipeline(self, get_pipelines):
@@ -1645,7 +1655,7 @@ class AppMethodTests(TestCase):
         # get from cache
         self.base_app.instantiate_users()
         self.assertEqual(self.base_app.users, [1, 2, 3])
-        self.assertEqual(get_users.call_count, 1)
+        get_users.assert_called_once_with(**settings.BASECRM_CACHE_USERS_FILTERS)
 
         # force get from API
         self.base_app.instantiate_users(True)

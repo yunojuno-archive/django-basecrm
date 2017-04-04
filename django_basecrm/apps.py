@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
 from django.apps import AppConfig
 
-from . import (
-    utils as base_api,
-    exceptions as base_exceptions,
-    settings as base_settings
-)
+from . import settings
 from helpers import (
     get_pipelines_from_api,
     get_stages_from_api,
     get_users_from_api
 )
 
+
 class BaseCRMConfig(AppConfig):
+
     name = 'django_basecrm'
     verbose_name = "BaseCRM API client SDK for Django"
     pipeline = None
@@ -21,7 +19,7 @@ class BaseCRMConfig(AppConfig):
 
     def ready(self):
         super(BaseCRMConfig, self).ready()
-        if base_settings.BASECRM_CACHE_AT_STARTUP:
+        if settings.BASECRM_CACHE_AT_STARTUP:
             self.instantiate_objects()
 
     def instantiate_objects(self, force=False):
@@ -39,7 +37,7 @@ class BaseCRMConfig(AppConfig):
             p = get_pipelines_from_api()
             try:
                 self.pipeline = p[0]
-            except:
+            except Exception:
                 self.pipeline = p
 
     def instantiate_stages(self, force=False):
@@ -51,5 +49,4 @@ class BaseCRMConfig(AppConfig):
 
     def instantiate_users(self, force=False):
         if force is True or self.users is None:
-            self.users = get_users_from_api()
-
+            self.users = get_users_from_api(**settings.BASECRM_CACHE_USERS_FILTERS)

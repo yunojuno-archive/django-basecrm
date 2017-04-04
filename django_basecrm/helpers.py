@@ -14,6 +14,7 @@ sent to the API call. In addition, the special 'id' kwarg parameter will affect 
 URL itself instead of being appended as a GET var.
 """
 
+
 def get_contacts(**kwargs):
     """
     Hits the API for contacts. If given an 'id' kwarg it will request that specific ID contact;
@@ -23,6 +24,7 @@ def get_contacts(**kwargs):
     """
     resp = base_api.request(base_api.RETRIEVE, 'contacts', kwargs)
     return base_api.parse(resp)
+
 
 def create_contact(contact_dict):
     """
@@ -35,6 +37,7 @@ def create_contact(contact_dict):
         # validation failed but the exception was suppressed
         pass
 
+
 def update_contact(id, contact_dict):
     """
     Runs local validation on the given dict and gives passing ones to the API to update
@@ -46,6 +49,7 @@ def update_contact(id, contact_dict):
         # validation failed but the exception was suppressed
         pass
 
+
 def get_deals(**kwargs):
     """
     Hits the API for deals. If given an 'id' kwarg it will request that specific ID deal;
@@ -55,6 +59,7 @@ def get_deals(**kwargs):
     """
     resp = base_api.request(base_api.RETRIEVE, 'deals', kwargs)
     return base_api.parse(resp)
+
 
 def create_deal(deal_dict):
     """
@@ -66,6 +71,7 @@ def create_deal(deal_dict):
     else:
         # validation failed but the exception was suppressed
         pass
+
 
 def update_deal(id, deal_dict):
     """
@@ -113,6 +119,7 @@ def update_lead(id, lead_dict):
         # validation failed but the exception was suppressed
         pass
 
+
 def get_notes(resource_type=None, resource_id=None, **kwargs):
     """
     Hits the API for notes. If resource_type and/or resource_id are
@@ -126,12 +133,15 @@ def get_notes(resource_type=None, resource_id=None, **kwargs):
 
     if resource_id is not None:
         if resource_type is None:
-            raise base_exceptions.BaseCRMValidationError('Resource type required when specifying resource ID')
+            raise base_exceptions.BaseCRMValidationError(
+                'Resource type required when specifying resource ID'
+            )
         else:
             kwargs['resource_id'] = resource_id
 
     resp = base_api.request(base_api.RETRIEVE, 'notes', kwargs)
     return base_api.parse(resp)
+
 
 def create_note(resource_type, resource_id, content):
     """
@@ -154,6 +164,7 @@ def create_note(resource_type, resource_id, content):
     resp = base_api.request(base_api.CREATE, 'notes', data=note_dict)
     return base_api.parse(resp)
 
+
 def get_pipelines():
     """
     Note that we don't expect these to change often, so we are essentially caching this for the
@@ -166,6 +177,7 @@ def get_pipelines():
     else:
         pipeline = get_pipelines_from_api()
     return pipeline
+
 
 def get_stages():
     """
@@ -180,7 +192,8 @@ def get_stages():
         stages = get_stages_from_api()
     return stages
 
-def get_users():
+
+def get_users(**kwargs):
     """
     Note that we don't expect these to change often, so we are essentially caching this for the
     duration (there's no cachebusting)
@@ -190,14 +203,17 @@ def get_users():
         app_conf.instantiate_users()
         users = app_conf.users
     else:
-        users = get_users_from_api()
+        users = get_users_from_api(**kwargs)
     return users
 
-def get_user_ids():
-    return [x['id'] for x in get_users()]
+
+def get_user_ids(**kwargs):
+    return [x['id'] for x in get_users(**kwargs)]
+
 
 def get_stage_ids():
     return [x['id'] for x in get_stages()]
+
 
 def get_pipelines_from_api(**kwargs):
     """
@@ -208,12 +224,14 @@ def get_pipelines_from_api(**kwargs):
         raise NotImplementedError("We currently only cater for a single pipeline in BaseCRM")
     return base_api.parse(resp)
 
+
 def get_stages_from_api(**kwargs):
     """
     This is the API method, called by the appConfig.instantiate method
     """
     resp = base_api.request(base_api.RETRIEVE, 'stages', kwargs)
     return base_api.parse(resp)
+
 
 def get_users_from_api(**kwargs):
     """
