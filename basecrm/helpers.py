@@ -2,11 +2,7 @@
 
 from django.apps import apps as django_apps
 
-from . import (
-    utils as base_api,
-    exceptions as base_exceptions,
-    settings as base_settings,
-)
+from . import utils, exceptions, settings
 
 """
 All functions at this level are simple wrappers that accept (as kwargs) any extra GET vars to be
@@ -22,17 +18,17 @@ def get_contacts(**kwargs):
 
     Returns a list of contact dicts unless the 'id' param is set in which case it returns a dict
     """
-    resp = base_api.request(base_api.RETRIEVE, 'contacts', kwargs)
-    return base_api.parse(resp)
+    resp = utils.request(utils.RETRIEVE, 'contacts', kwargs)
+    return utils.parse(resp)
 
 
 def create_contact(contact_dict):
     """
     Runs local validation on the given dict and gives passing ones to the API to create
     """
-    if base_api.validate_contact_dict(base_api.CREATE, contact_dict):
-        resp = base_api.request(base_api.CREATE, 'contacts', None, data=contact_dict)
-        return base_api.parse(resp)
+    if utils.validate_contact_dict(utils.CREATE, contact_dict):
+        resp = utils.request(utils.CREATE, 'contacts', None, data=contact_dict)
+        return utils.parse(resp)
     else:
         # validation failed but the exception was suppressed
         pass
@@ -42,9 +38,9 @@ def update_contact(id, contact_dict):
     """
     Runs local validation on the given dict and gives passing ones to the API to update
     """
-    if base_api.validate_contact_dict(base_api.UPDATE, contact_dict, skip_id=True):
-        resp = base_api.request(base_api.UPDATE, 'contacts', {'id': id}, data=contact_dict)
-        return base_api.parse(resp)
+    if utils.validate_contact_dict(utils.UPDATE, contact_dict, skip_id=True):
+        resp = utils.request(utils.UPDATE, 'contacts', {'id': id}, data=contact_dict)
+        return utils.parse(resp)
     else:
         # validation failed but the exception was suppressed
         pass
@@ -57,17 +53,17 @@ def get_deals(**kwargs):
 
     Returns a list of deal dicts unless the 'id' param is set in which case it returns a dict
     """
-    resp = base_api.request(base_api.RETRIEVE, 'deals', kwargs)
-    return base_api.parse(resp)
+    resp = utils.request(utils.RETRIEVE, 'deals', kwargs)
+    return utils.parse(resp)
 
 
 def create_deal(deal_dict):
     """
     Runs local validation on the given dict and gives passing ones to the API to create
     """
-    if base_api.validate_deal_dict(base_api.CREATE, deal_dict):
-        resp = base_api.request(base_api.CREATE, 'deals', None, data=deal_dict)
-        return base_api.parse(resp)
+    if utils.validate_deal_dict(utils.CREATE, deal_dict):
+        resp = utils.request(utils.CREATE, 'deals', None, data=deal_dict)
+        return utils.parse(resp)
     else:
         # validation failed but the exception was suppressed
         pass
@@ -77,9 +73,9 @@ def update_deal(id, deal_dict):
     """
     Runs local validation on the given dict and gives passing ones to the API to update
     """
-    if base_api.validate_deal_dict(base_api.UPDATE, deal_dict, skip_id=True):
-        resp = base_api.request(base_api.UPDATE, 'deals', {'id': id}, data=deal_dict)
-        return base_api.parse(resp)
+    if utils.validate_deal_dict(utils.UPDATE, deal_dict, skip_id=True):
+        resp = utils.request(utils.UPDATE, 'deals', {'id': id}, data=deal_dict)
+        return utils.parse(resp)
     else:
         # validation failed but the exception was suppressed
         pass
@@ -92,17 +88,17 @@ def get_leads(**kwargs):
 
     Returns a list of lead dicts unless the 'id' param is set in which case it returns a dict
     """
-    resp = base_api.request(base_api.RETRIEVE, 'leads', kwargs)
-    return base_api.parse(resp)
+    resp = utils.request(utils.RETRIEVE, 'leads', kwargs)
+    return utils.parse(resp)
 
 
 def create_lead(lead_dict):
     """
     Runs local validation on the given dict and gives passing ones to the API to create
     """
-    if base_api.validate_lead_dict(base_api.CREATE, lead_dict):
-        resp = base_api.request(base_api.CREATE, 'leads', None, data=lead_dict)
-        return base_api.parse(resp)
+    if utils.validate_lead_dict(utils.CREATE, lead_dict):
+        resp = utils.request(utils.CREATE, 'leads', None, data=lead_dict)
+        return utils.parse(resp)
     else:
         # validation failed but the exception was suppressed
         pass
@@ -112,9 +108,9 @@ def update_lead(id, lead_dict):
     """
     Runs local validation on the given dict and gives passing ones to the API to update
     """
-    if base_api.validate_lead_dict(base_api.UPDATE, lead_dict, skip_id=True):
-        resp = base_api.request(base_api.UPDATE, 'leads', {'id': id}, data=lead_dict)
-        return base_api.parse(resp)
+    if utils.validate_lead_dict(utils.UPDATE, lead_dict, skip_id=True):
+        resp = utils.request(utils.UPDATE, 'leads', {'id': id}, data=lead_dict)
+        return utils.parse(resp)
     else:
         # validation failed but the exception was suppressed
         pass
@@ -127,18 +123,20 @@ def get_notes(resource_type=None, resource_id=None, **kwargs):
     """
     if resource_type is not None:
         if resource_type not in ['lead', 'contact', 'deal']:
-            raise base_exceptions.BaseCRMValidationError('Invalid resource type')
+            raise exceptions.BaseCRMValidationError('Invalid resource type')
         else:
             kwargs['resource_type'] = resource_type
 
     if resource_id is not None:
         if resource_type is None:
-            raise base_exceptions.BaseCRMValidationError('Resource type required when specifying resource ID')
+            raise exceptions.BaseCRMValidationError(
+                'Resource type required when specifying resource ID'
+            )
         else:
             kwargs['resource_id'] = resource_id
 
-    resp = base_api.request(base_api.RETRIEVE, 'notes', kwargs)
-    return base_api.parse(resp)
+    resp = utils.request(utils.RETRIEVE, 'notes', kwargs)
+    return utils.parse(resp)
 
 
 def create_note(resource_type, resource_id, content):
@@ -146,12 +144,12 @@ def create_note(resource_type, resource_id, content):
     Posts to the notes endpoint of the API.
     """
     if resource_type is None:
-        raise base_exceptions.BaseCRMValidationError('Resource type required')
+        raise exceptions.BaseCRMValidationError('Resource type required')
     elif resource_type not in ['lead', 'contact', 'deal']:
-        raise base_exceptions.BaseCRMValidationError('Invalid resource type')
+        raise exceptions.BaseCRMValidationError('Invalid resource type')
 
     if resource_id is None:
-        raise base_exceptions.BaseCRMValidationError('Resource ID required')
+        raise exceptions.BaseCRMValidationError('Resource ID required')
 
     note_dict = {
         'resource_type': resource_type,
@@ -159,8 +157,8 @@ def create_note(resource_type, resource_id, content):
         'content': content
     }
 
-    resp = base_api.request(base_api.CREATE, 'notes', data=note_dict)
-    return base_api.parse(resp)
+    resp = utils.request(utils.CREATE, 'notes', data=note_dict)
+    return utils.parse(resp)
 
 
 def get_pipelines():
@@ -168,7 +166,7 @@ def get_pipelines():
     Note that we don't expect these to change often, so we are essentially caching this for the
     duration (there's no cachebusting)
     """
-    if base_settings.BASECRM_CACHE_PIPELINE:
+    if settings.BASECRM_CACHE_PIPELINE:
         app_conf = django_apps.get_app_config('basecrm')
         app_conf.instantiate_pipeline()
         pipeline = app_conf.pipeline
@@ -182,7 +180,7 @@ def get_stages():
     Note that we don't expect these to change often, so we are essentially caching this for the
     duration (there's no cachebusting)
     """
-    if base_settings.BASECRM_CACHE_STAGES:
+    if settings.BASECRM_CACHE_STAGES:
         app_conf = django_apps.get_app_config('basecrm')
         app_conf.instantiate_stages()
         stages = app_conf.stages
@@ -191,22 +189,22 @@ def get_stages():
     return stages
 
 
-def get_users():
+def get_users(**kwargs):
     """
     Note that we don't expect these to change often, so we are essentially caching this for the
     duration (there's no cachebusting)
     """
-    if base_settings.BASECRM_CACHE_USERS:
+    if settings.BASECRM_CACHE_USERS:
         app_conf = django_apps.get_app_config('basecrm')
         app_conf.instantiate_users()
         users = app_conf.users
     else:
-        users = get_users_from_api()
+        users = get_users_from_api(**kwargs)
     return users
 
 
-def get_user_ids():
-    return [x['id'] for x in get_users()]
+def get_user_ids(**kwargs):
+    return [x['id'] for x in get_users(**kwargs)]
 
 
 def get_stage_ids():
@@ -217,23 +215,23 @@ def get_pipelines_from_api(**kwargs):
     """
     This is the API method, called by the appConfig.instantiate method
     """
-    resp = base_api.request(base_api.RETRIEVE, 'pipelines', kwargs)
-    if base_api.count(resp) > 1:
+    resp = utils.request(utils.RETRIEVE, 'pipelines', kwargs)
+    if utils.count(resp) > 1:
         raise NotImplementedError("We currently only cater for a single pipeline in BaseCRM")
-    return base_api.parse(resp)
+    return utils.parse(resp)
 
 
 def get_stages_from_api(**kwargs):
     """
     This is the API method, called by the appConfig.instantiate method
     """
-    resp = base_api.request(base_api.RETRIEVE, 'stages', kwargs)
-    return base_api.parse(resp)
+    resp = utils.request(utils.RETRIEVE, 'stages', kwargs)
+    return utils.parse(resp)
 
 
 def get_users_from_api(**kwargs):
     """
     This is the API method, called by the appConfig.instantiate method
     """
-    resp = base_api.request(base_api.RETRIEVE, 'users', kwargs)
-    return base_api.parse(resp)
+    resp = utils.request(utils.RETRIEVE, 'users', kwargs)
+    return utils.parse(resp)

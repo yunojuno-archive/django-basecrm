@@ -3,10 +3,7 @@ import types
 
 from django.apps import apps
 
-from . import (
-    exceptions as base_exceptions,
-    helpers as base_helpers
-)
+from . import exceptions, helpers
 
 
 class AbstractModelSerializer(object):
@@ -23,18 +20,18 @@ class AbstractModelSerializer(object):
         Checks this (extended) class has set the basics correctly, and triggers the value assignment
         """
         if self.Meta.model is None:
-            raise base_exceptions.BaseCRMConfigurationError(
+            raise exceptions.BaseCRMConfigurationError(
                 "ModelSerializer must be defined with the relevant model on the Meta inner class"
             )
         if isinstance(self.Meta.model, basestring):
             try:
                 self.Meta.model = apps.get_model(*self.Meta.model.split('.', 1))
-            except:
-                raise base_exceptions.BaseCRMConfigurationError(
+            except Exception:
+                raise exceptions.BaseCRMConfigurationError(
                     "The model on the Meta inner class could not be derived from the string given"
                 )
         if not isinstance(instance, self.Meta.model):
-            raise base_exceptions.BaseCRMConfigurationError(
+            raise exceptions.BaseCRMConfigurationError(
                 "Initialise serializer with an instance of type model (as defined in Meta class)"
             )
         self.instance = instance
@@ -174,7 +171,7 @@ class ContactModelSerializer(AbstractModelSerializer):
         if field_value is None:
             return True
 
-        if field_name == 'owner_id' and field_value not in base_helpers.get_user_ids():
+        if field_name == 'owner_id' and field_value not in helpers.get_user_ids():
             return False
 
         return super(ContactModelSerializer, self)._validate_field(field_name, field_value)
@@ -210,10 +207,10 @@ class DealModelSerializer(AbstractModelSerializer):
         if field_value is None:
             return True
 
-        if field_name == 'owner_id' and field_value not in base_helpers.get_user_ids():
+        if field_name == 'owner_id' and field_value not in helpers.get_user_ids():
             return False
 
-        if field_name == 'stage_id' and field_value not in base_helpers.get_stage_ids():
+        if field_name == 'stage_id' and field_value not in helpers.get_stage_ids():
             return False
 
         return super(DealModelSerializer, self)._validate_field(field_name, field_value)

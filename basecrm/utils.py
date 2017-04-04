@@ -4,10 +4,7 @@ import requests
 
 from django.apps import apps as django_apps
 
-from . import (
-    settings as base_settings,
-    exceptions as base_exceptions
-)
+from . import settings, exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -35,14 +32,14 @@ def request(action, endpoint, get_params=None, **kwargs):
     for more info on the parameters.
     """
     if action not in VERBS.keys():
-        raise base_exceptions.BaseCRMBadParameterFormat(
+        raise exceptions.BaseCRMBadParameterFormat(
             "Expecting one of INFO, RETRIEVE, CREATE, UPDATE or DELETE but got %s"
             % action
         )
 
     if action in REQUIRE_BODY_DATA:
         if 'data' not in kwargs:
-            raise base_exceptions.BaseCRMBadParameterFormat(
+            raise exceptions.BaseCRMBadParameterFormat(
                 "API method '%s' requires a `data` parameter"
                 % VERBS[action]
             )
@@ -65,12 +62,12 @@ def request(action, endpoint, get_params=None, **kwargs):
             )
         )
         if r.status_code == 401:
-            raise base_exceptions.BaseCRMAPIUnauthorized()
+            raise exceptions.BaseCRMAPIUnauthorized()
         elif r.status_code == 404 and is_id_request:
             # no record with the given ID exists
-            raise base_exceptions.BaseCRMNoResult()
+            raise exceptions.BaseCRMNoResult()
         elif r.status_code == 422:
-            raise base_exceptions.BaseCRMValidationError(json['errors'][0]['error']['details'])
+            raise exceptions.BaseCRMValidationError(json['errors'][0]['error']['details'])
         else:
             raise Exception(
                 "BaseCRM API responded with status code '%s'. %s" % (
@@ -101,7 +98,7 @@ def parse(response_json):
             )
         )
     ):
-        raise base_exceptions.BaseCRMBadParameterFormat()
+        raise exceptions.BaseCRMBadParameterFormat()
 
     if 'items' in response_json:
         return [item['data'] for item in response_json['items']]
@@ -117,7 +114,7 @@ def count(response_json):
         not isinstance(response_json, dict) or
         'meta' not in response_json
     ):
-        raise base_exceptions.BaseCRMBadParameterFormat(
+        raise exceptions.BaseCRMBadParameterFormat(
             u'Parameter format was not as expected: a full dict from the requests.json() '
             u'method applied to the full BaseCRM API response. The parameter given was: %s' %
             repr(response_json)
@@ -172,7 +169,7 @@ def validate_contact_dict(operation, contact_dict, skip_id=False, suppress=False
 
     if not valid:
         msg = "Parameters fail BaseCRM API requirements for contact. %s" % msg
-        raise base_exceptions.BaseCRMValidationError(msg)
+        raise exceptions.BaseCRMValidationError(msg)
 
     return True
 
@@ -204,7 +201,7 @@ def validate_deal_dict(operation, deal_dict, skip_id=False, suppress=False):
 
     if not valid:
         msg = "Parameters fail BaseCRM API requirements for deal. %s" % msg
-        raise base_exceptions.BaseCRMValidationError(msg)
+        raise exceptions.BaseCRMValidationError(msg)
 
     return True
 
@@ -235,7 +232,7 @@ def validate_lead_dict(operation, lead_dict, skip_id=False, suppress=False):
 
     if not valid:
         msg = "Parameters fail BaseCRM API requirements for deal. %s" % msg
-        raise base_exceptions.BaseCRMValidationError(msg)
+        raise exceptions.BaseCRMValidationError(msg)
 
     return True
 
@@ -288,12 +285,12 @@ def _build_headers(extra_headers=None):
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer %s' % base_settings.BASECRM_API_KEY,
-        'User-Agent': base_settings.BASECRM_USER_AGENT
+        'Authorization': 'Bearer %s' % settings.BASECRM_API_KEY,
+        'User-Agent': settings.BASECRM_USER_AGENT
     }
     if extra_headers is not None:
         if not isinstance(extra_headers, dict):
-            raise base_exceptions.BaseCRMBadParameterFormat(
+            raise exceptions.BaseCRMBadParameterFormat(
                 u'Parameter format was not a dict as expected. The parameter given was: %s' %
                 repr(extra_headers)
             )
@@ -308,10 +305,10 @@ def _build_api_endpoint(endpoint, get_params=None):
     We expect settings.BASECRM_API_URL to be e.g. https://api.getbase.com/v2/ -- note the protocol,
     the path and the trailing slash are all included and expected (i.e. not handled)
     """
-    url = '%s%s' % (base_settings.BASECRM_API_URL, endpoint)
+    url = '%s%s' % (settings.BASECRM_API_URL, endpoint)
     if get_params is not None:
         if not isinstance(get_params, dict):
-            raise base_exceptions.BaseCRMBadParameterFormat(
+            raise exceptions.BaseCRMBadParameterFormat(
                 u'Parameter format was not a dict as expected. The parameter given was: %s' %
                 repr(get_params)
             )

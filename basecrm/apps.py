@@ -1,17 +1,11 @@
 # -*- coding: utf-8 -*-
 from django.apps import AppConfig
 
-from . import (
-    settings as base_settings
-)
-from .helpers import (
-    get_pipelines_from_api,
-    get_stages_from_api,
-    get_users_from_api
-)
+from . import settings, helpers
 
 
 class BaseCRMConfig(AppConfig):
+
     name = 'basecrm'
     verbose_name = "Base (CRM)"
     pipeline = None
@@ -20,7 +14,7 @@ class BaseCRMConfig(AppConfig):
 
     def ready(self):
         super(BaseCRMConfig, self).ready()
-        if base_settings.BASECRM_CACHE_AT_STARTUP:
+        if settings.BASECRM_CACHE_AT_STARTUP:
             self.instantiate_objects()
 
     def instantiate_objects(self, force=False):
@@ -35,10 +29,10 @@ class BaseCRMConfig(AppConfig):
 
     def instantiate_pipeline(self, force=False):
         if force is True or self.pipeline is None:
-            p = get_pipelines_from_api()
+            p = helpers.get_pipelines_from_api()
             try:
                 self.pipeline = p[0]
-            except:
+            except Exception:
                 self.pipeline = p
 
     def instantiate_stages(self, force=False):
@@ -46,8 +40,8 @@ class BaseCRMConfig(AppConfig):
             kwargs = {}
             if self.pipeline is not None:
                 kwargs['pipeline_id'] = self.pipeline['id']
-            self.stages = get_stages_from_api(**kwargs)
+            self.stages = helpers.get_stages_from_api(**kwargs)
 
     def instantiate_users(self, force=False):
         if force is True or self.users is None:
-            self.users = get_users_from_api()
+            self.users = helpers.get_users_from_api(**settings.BASECRM_CACHE_USERS_FILTERS)
