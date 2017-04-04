@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import requests
-import urllib
 
 from django.apps import apps as django_apps
 
@@ -29,17 +28,24 @@ REQUIRE_BODY_DATA = [
     UPDATE
 ]
 
+
 def request(action, endpoint, get_params=None, **kwargs):
     """
     Makes a request to the BaseCRM API and handles any errors thrown intelligently. See _request
     for more info on the parameters.
     """
     if action not in VERBS.keys():
-        raise base_exceptions.BaseCRMBadParameterFormat("Expecting one of INFO, RETRIEVE, CREATE, UPDATE or DELETE but got %s" % action)
+        raise base_exceptions.BaseCRMBadParameterFormat(
+            "Expecting one of INFO, RETRIEVE, CREATE, UPDATE or DELETE but got %s"
+            % action
+        )
 
     if action in REQUIRE_BODY_DATA:
         if 'data' not in kwargs:
-            raise base_exceptions.BaseCRMBadParameterFormat("API method '%s' requires a `data` parameter" % VERBS[action])
+            raise base_exceptions.BaseCRMBadParameterFormat(
+                "API method '%s' requires a `data` parameter"
+                % VERBS[action]
+            )
         post_data = kwargs.pop('data')
         kwargs['json'] = {'data': post_data}
 
@@ -75,6 +81,7 @@ def request(action, endpoint, get_params=None, **kwargs):
     else:
         return r.json()
 
+
 def parse(response_json):
     """
     Simple helper method to get into the data dicts for each item returned and ignore all the meta;
@@ -101,6 +108,7 @@ def parse(response_json):
     else:
         return response_json['data']
 
+
 def count(response_json):
     """
     Pulls and returns the count given by the BaseCRM API (which takes account of pagination)
@@ -119,8 +127,9 @@ def count(response_json):
         return 1  # we're assuming this is a response to an ID request
     return response_json['meta']['count']
 
+
 def validate_contact_dict(operation, contact_dict, skip_id=False, suppress=False):
-    if suppress == True:
+    if suppress is True:
         raise NotImplementedError("No validation suppression in place yet")
     valid = False
     msg = ""
@@ -139,7 +148,7 @@ def validate_contact_dict(operation, contact_dict, skip_id=False, suppress=False
             (  # organization contact requirements
                 (
                     'is_organization' in contact_dict and
-                    contact_dict['is_organization'] == True
+                    contact_dict['is_organization'] is True
                 ) and
                 (
                     'name' in contact_dict
@@ -167,8 +176,9 @@ def validate_contact_dict(operation, contact_dict, skip_id=False, suppress=False
 
     return True
 
+
 def validate_deal_dict(operation, deal_dict, skip_id=False, suppress=False):
-    if suppress == True:
+    if suppress is True:
         raise NotImplementedError("No validation suppression in place yet")
     valid = False
     msg = ""
@@ -198,8 +208,9 @@ def validate_deal_dict(operation, deal_dict, skip_id=False, suppress=False):
 
     return True
 
+
 def validate_lead_dict(operation, lead_dict, skip_id=False, suppress=False):
-    if suppress == True:
+    if suppress is True:
         raise NotImplementedError("No validation suppression in place yet")
     valid = False
     msg = ""
@@ -228,15 +239,16 @@ def validate_lead_dict(operation, lead_dict, skip_id=False, suppress=False):
 
     return True
 
+
 def instantiate_if_necessary():
-    base_app = django_apps.get_app_config('django_basecrm')
+    base_app = django_apps.get_app_config('basecrm')
     base_app.instantiate_objects()
 
 
 ###########################################################################
-##                                                                       ##
-##   Don't call any of the following methods directly unless debugging   ##
-##                                                                       ##
+#                                                                        ##
+#    Don't call any of the following methods directly unless debugging   ##
+#                                                                        ##
 ###########################################################################
 
 def _request(method, endpoint, get_params=None, **kwargs):
@@ -245,8 +257,8 @@ def _request(method, endpoint, get_params=None, **kwargs):
     segment of the endpoint, rather than the whole URI; the rest comes from settings.
 
     The get_params param will be used to build GET get_params to append to the API call (e.g. for
-    pagination and filtering). An ID can also be added in to the get_params param and will be used by
-    _build_api_endpoint.
+    pagination and filtering). An ID can also be added in to the get_params param and will be used
+    by _build_api_endpoint.
 
     Any extra kwargs will be passed along to `requests.request()`
     """
@@ -266,6 +278,7 @@ def _request(method, endpoint, get_params=None, **kwargs):
         )
     )
     return response
+
 
 def _build_headers(extra_headers=None):
     """
@@ -288,6 +301,7 @@ def _build_headers(extra_headers=None):
             headers[k] = v
 
     return headers
+
 
 def _build_api_endpoint(endpoint, get_params=None):
     """

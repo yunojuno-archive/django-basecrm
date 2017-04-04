@@ -2,10 +2,8 @@
 import types
 
 from django.apps import apps
-from django.db.models.base import ModelBase
 
 from . import (
-    utils as base_api,
     exceptions as base_exceptions,
     helpers as base_helpers
 )
@@ -30,7 +28,7 @@ class AbstractModelSerializer(object):
             )
         if isinstance(self.Meta.model, basestring):
             try:
-                self.Meta.model = apps.get_model ( *self.Meta.model.split('.',1) )
+                self.Meta.model = apps.get_model(*self.Meta.model.split('.', 1))
             except:
                 raise base_exceptions.BaseCRMConfigurationError(
                     "The model on the Meta inner class could not be derived from the string given"
@@ -132,7 +130,6 @@ class AbstractModelSerializer(object):
         """
         return True
 
-
     class Meta(object):
         model = None
         fields = None
@@ -165,7 +162,7 @@ class ContactModelSerializer(AbstractModelSerializer):
         'facebook',
         'linkedin',
         'skype',
-        'address',  # this is a nested object (dict) with the following keys: 'city', 'country', 'line1', 'postal_code' and 'state'
+        'address',  # this is a nested object (dict) with the following keys: 'city', 'country', 'line1', 'postal_code' and 'state'  # noqa
         'tags',
         'custom_fields',
     ]

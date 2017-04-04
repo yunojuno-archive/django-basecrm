@@ -2,19 +2,18 @@
 from django.apps import AppConfig
 
 from . import (
-    utils as base_api,
-    exceptions as base_exceptions,
     settings as base_settings
 )
-from helpers import (
+from .helpers import (
     get_pipelines_from_api,
     get_stages_from_api,
     get_users_from_api
 )
 
+
 class BaseCRMConfig(AppConfig):
-    name = 'django_basecrm'
-    verbose_name = "BaseCRM API client SDK for Django"
+    name = 'basecrm'
+    verbose_name = "Base (CRM)"
     pipeline = None
     stages = None
     users = None
@@ -52,4 +51,3 @@ class BaseCRMConfig(AppConfig):
     def instantiate_users(self, force=False):
         if force is True or self.users is None:
             self.users = get_users_from_api()
-

@@ -6,12 +6,17 @@ from django.apps import apps as django_apps
 from django.test import TestCase
 from django.db.models.base import ModelBase
 
-from . import apps, exceptions, helpers, serializers, utils
+from . import (
+    exceptions,
+    helpers,
+    serializers,
+    utils
+)
 
 
 class RequestWrapperTests(TestCase):
 
-    @mock.patch('%s.utils.base_settings' % __name__)
+    @mock.patch('basecrm.utils.base_settings')
     def test_build_api_endpoint(self, settings):
         # bad api_urls aren't handled - caveat emptor
         settings.BASECRM_API_URL = 'api.base.com'
@@ -55,7 +60,7 @@ class RequestWrapperTests(TestCase):
         result = utils._build_api_endpoint(endpoint, params)
         self.assertEqual(result, 'http://api.base.com/test/contacts/world')
 
-    @mock.patch('%s.utils.base_settings' % __name__)
+    @mock.patch('basecrm.utils.base_settings')
     def test_build_headers(self, settings):
         settings.BASECRM_API_KEY = 'an-api_key/that1s4lphaNuMer1c'
         settings.BASECRM_USER_AGENT = 'yourApp/1.0'
@@ -120,9 +125,9 @@ class RequestWrapperTests(TestCase):
             }
         )
 
-    @mock.patch('%s.utils.requests' % __name__)
-    @mock.patch('%s.utils._build_api_endpoint' % __name__)
-    @mock.patch('%s.utils._build_headers' % __name__)
+    @mock.patch('basecrm.utils.requests')
+    @mock.patch('basecrm.utils._build_api_endpoint')
+    @mock.patch('basecrm.utils._build_headers')
     def test_request_wrapper(self, _b_headers, _b_endpoint, requests):
         response = mock.Mock()
         response.status_code = 200
@@ -445,7 +450,7 @@ class ValidationTests(TestCase):
 
 class UtilityMethodTests(TestCase):
 
-    @mock.patch('%s.utils.django_apps' % __name__)
+    @mock.patch('basecrm.utils.django_apps')
     def test_instantiate_if_necessary(self, _django_apps):
         _app = mock.Mock()
         _app.pipeline = None
@@ -454,7 +459,7 @@ class UtilityMethodTests(TestCase):
         _django_apps.get_app_config.return_value = _app
 
         utils.instantiate_if_necessary()
-        _django_apps.get_app_config.assert_called_once_with('django_basecrm')
+        _django_apps.get_app_config.assert_called_once_with('basecrm')
         _app.instantiate_stages.assert_called_once()
 
         _django_apps.get_app_config.reset_mock()
@@ -465,7 +470,7 @@ class UtilityMethodTests(TestCase):
         _app.users = None
 
         utils.instantiate_if_necessary()
-        _django_apps.get_app_config.assert_called_once_with('django_basecrm')
+        _django_apps.get_app_config.assert_called_once_with('basecrm')
         _app.instantiate_stages.assert_called_once()
 
         _django_apps.get_app_config.reset_mock()
@@ -476,7 +481,7 @@ class UtilityMethodTests(TestCase):
         _app.users = None
 
         utils.instantiate_if_necessary()
-        _django_apps.get_app_config.assert_called_once_with('django_basecrm')
+        _django_apps.get_app_config.assert_called_once_with('basecrm')
         _app.instantiate_stages.assert_called_once()
 
         _django_apps.get_app_config.reset_mock()
@@ -487,7 +492,7 @@ class UtilityMethodTests(TestCase):
         _app.users = ['a', 'b', 'c']
 
         utils.instantiate_if_necessary()
-        _django_apps.get_app_config.assert_called_once_with('django_basecrm')
+        _django_apps.get_app_config.assert_called_once_with('basecrm')
         self.assertFalse(_app.instantiate_stages.called)
 
     def test_count(self):
@@ -544,7 +549,7 @@ class UtilityMethodTests(TestCase):
         result = utils.parse(response_dict)
         self.assertEqual(result, [{'name': 'hello'}])
 
-        response_dict = {'items': [{'data': {'name': 'hello'}}, {'data': {'name': 'world'}}], 'meta': {'count': 98}}
+        response_dict = {'items': [{'data': {'name': 'hello'}}, {'data': {'name': 'world'}}], 'meta': {'count': 98}}  # noqa
         result = utils.parse(response_dict)
         self.assertEqual(result, [{'name': 'hello'}, {'name': 'world'}])
 
@@ -556,13 +561,12 @@ class UtilityMethodTests(TestCase):
         result = utils.parse(response_dict)
         self.assertEqual(result, {'name': 'hello'})
 
-    @mock.patch('%s.utils._request' % __name__)
+    @mock.patch('basecrm.utils._request')
     def test_request(self, _request):
         response = mock.Mock()
         response.status_code = 200
         response.json.return_value = {'items': [], 'meta': {}}
         _request.return_value = response
-
 
         # test all the pre-send validation
 
@@ -705,14 +709,14 @@ class UtilityMethodTests(TestCase):
 
 class HelperMethodTests(TestCase):
 
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_get_contacts(self, parse, request):
         request.return_value = {
-            'items':[{'id':23, 'name':'hello'},{'id':99, 'name':'world'}],
+            'items': [{'id': 23, 'name': 'hello'}, {'id': 99, 'name': 'world'}],
             'meta': {'count': 2}
         }
-        parse.return_value = [{'id':23, 'name':'hello'},{'id':99, 'name':'world'}]
+        parse.return_value = [{'id': 23, 'name': 'hello'}, {'id': 99, 'name': 'world'}]
 
         result = helpers.get_contacts()
         self.assertEqual(result, parse.return_value)
@@ -726,15 +730,15 @@ class HelperMethodTests(TestCase):
         request.assert_called_once_with(utils.RETRIEVE, 'contacts', {'id': 456, 'hello': 'world'})
         parse.assert_called_once_with(request.return_value)
 
-    @mock.patch('%s.utils.validate_contact_dict' % __name__)
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.validate_contact_dict')
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_create_contact(self, parse, request, validate):
         request.return_value = {
-            'data':{'id':23, 'name':'M deLaurentiis'},
+            'data': {'id': 23, 'name': 'M deLaurentiis'},
             'meta': {'count': 1}
         }
-        parse.return_value = {'id':23, 'name':'M deLaurentiis'}
+        parse.return_value = {'id': 23, 'name': 'M deLaurentiis'}
         validate.return_value = True
         data = {'id': 999, 'name': 'M deLaurentiis'}
 
@@ -761,15 +765,15 @@ class HelperMethodTests(TestCase):
         self.assertFalse(request.called)
         self.assertFalse(parse.called)
 
-    @mock.patch('%s.utils.validate_contact_dict' % __name__)
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.validate_contact_dict')
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_update_contact(self, parse, request, validate):
         request.return_value = {
-            'data':{'id':23, 'name':'G deLaurentiis'},
+            'data': {'id': 23, 'name': 'G deLaurentiis'},
             'meta': {'count': 1}
         }
-        parse.return_value = {'id':23, 'name':'G deLaurentiis'}
+        parse.return_value = {'id': 23, 'name': 'G deLaurentiis'}
         validate.return_value = True
         data = {'name': 'G deLaurentiis'}
         id = 33
@@ -797,14 +801,14 @@ class HelperMethodTests(TestCase):
         self.assertFalse(request.called)
         self.assertFalse(parse.called)
 
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_get_deals(self, parse, request):
         request.return_value = {
-            'items':[{'id':23, 'name':'hello'},{'id':99, 'name':'world'}],
+            'items': [{'id': 23, 'name': 'hello'}, {'id': 99, 'name': 'world'}],
             'meta': {'count': 2}
         }
-        parse.return_value = [{'id':23, 'name':'hello'},{'id':99, 'name':'world'}]
+        parse.return_value = [{'id': 23, 'name': 'hello'}, {'id': 99, 'name': 'world'}]
 
         result = helpers.get_deals()
         self.assertEqual(result, parse.return_value)
@@ -818,15 +822,15 @@ class HelperMethodTests(TestCase):
         request.assert_called_once_with(utils.RETRIEVE, 'deals', {'id': 456, 'hello': 'world'})
         parse.assert_called_once_with(request.return_value)
 
-    @mock.patch('%s.utils.validate_deal_dict' % __name__)
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.validate_deal_dict')
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_create_deal(self, parse, request, validate):
         request.return_value = {
-            'data':{'id':23, 'name':'Создание советской атомной бомбы'},
+            'data': {'id': 23, 'name': 'Создание советской атомной бомбы'},
             'meta': {'count': 1}
         }
-        parse.return_value = {'id':23, 'name':'Создание советской атомной бомбы'}
+        parse.return_value = {'id': 23, 'name': 'Создание советской атомной бомбы'}
         validate.return_value = True
         data = {'id': 999, 'name': 'Создание советской атомной бомбы'}
 
@@ -853,15 +857,15 @@ class HelperMethodTests(TestCase):
         self.assertFalse(request.called)
         self.assertFalse(parse.called)
 
-    @mock.patch('%s.utils.validate_deal_dict' % __name__)
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.validate_deal_dict')
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_update_deal(self, parse, request, validate):
         request.return_value = {
-            'data':{'id':23, 'name':'Manhattan Project'},
+            'data': {'id': 23, 'name': 'Manhattan Project'},
             'meta': {'count': 1}
         }
-        parse.return_value = {'id':23, 'name':'Manhattan Project'}
+        parse.return_value = {'id': 23, 'name': 'Manhattan Project'}
         validate.return_value = True
         data = {'id': 999, 'name': 'Manhattan Project'}
         id = 23
@@ -889,15 +893,14 @@ class HelperMethodTests(TestCase):
         self.assertFalse(request.called)
         self.assertFalse(parse.called)
 
-
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_get_leads(self, parse, request):
         request.return_value = {
-            'items':[{'id':23, 'name':'hello'},{'id':99, 'name':'world'}],
+            'items': [{'id': 23, 'name': 'hello'}, {'id': 99, 'name': 'world'}],
             'meta': {'count': 2}
         }
-        parse.return_value = [{'id':23, 'name':'hello'},{'id':99, 'name':'world'}]
+        parse.return_value = [{'id': 23, 'name': 'hello'}, {'id': 99, 'name': 'world'}]
 
         result = helpers.get_leads()
         self.assertEqual(result, parse.return_value)
@@ -911,9 +914,9 @@ class HelperMethodTests(TestCase):
         request.assert_called_once_with(utils.RETRIEVE, 'leads', {'id': 456, 'hello': 'world'})
         parse.assert_called_once_with(request.return_value)
 
-    @mock.patch('%s.utils.validate_lead_dict' % __name__)
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.validate_lead_dict')
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_create_lead(self, parse, request, validate):
         request.return_value = {
             'data': {
@@ -923,7 +926,7 @@ class HelperMethodTests(TestCase):
             },
             'meta': {
                 'count': 1
-             }
+            }
         }
         parse.return_value = {
             'id': 23,
@@ -960,15 +963,15 @@ class HelperMethodTests(TestCase):
         self.assertFalse(request.called)
         self.assertFalse(parse.called)
 
-    @mock.patch('%s.utils.validate_lead_dict' % __name__)
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.validate_lead_dict')
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_update_lead(self, parse, request, validate):
         request.return_value = {
-            'data':{'id':23, 'name':'Manhattan Project'},
+            'data': {'id': 23, 'name': 'Manhattan Project'},
             'meta': {'count': 1}
         }
-        parse.return_value = {'id':23, 'name':'Manhattan Project'}
+        parse.return_value = {'id': 23, 'name': 'Manhattan Project'}
         validate.return_value = True
         data = {'id': 999, 'name': 'Manhattan Project'}
         id = 23
@@ -996,14 +999,14 @@ class HelperMethodTests(TestCase):
         self.assertFalse(request.called)
         self.assertFalse(parse.called)
 
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_get_notes(self, parse, request):
         request.return_value = {
-            'items':[{'id':23, 'content':'hello'},{'id':99, 'content':'world'}],
+            'items': [{'id': 23, 'content': 'hello'}, {'id': 99, 'content': 'world'}],
             'meta': {'count': 2}
         }
-        parse.return_value = [{'id':23, 'content':'hello'},{'id':99, 'content':'world'}]
+        parse.return_value = [{'id': 23, 'content': 'hello'}, {'id': 99, 'content': 'world'}]
         resource_type = 'contact'
         resource_id = 55
 
@@ -1024,7 +1027,7 @@ class HelperMethodTests(TestCase):
         resource_type = 'lead'
         result = helpers.get_notes(resource_type, resource_id)
         self.assertEqual(result, parse.return_value)
-        request.assert_called_once_with(utils.RETRIEVE, 'notes', {'resource_type': 'lead', 'resource_id': 55})
+        request.assert_called_once_with(utils.RETRIEVE, 'notes', {'resource_type': 'lead', 'resource_id': 55})  # noqa
         parse.assert_called_once_with(request.return_value)
 
         request.reset_mock()
@@ -1032,7 +1035,7 @@ class HelperMethodTests(TestCase):
         resource_type = 'deal'
         result = helpers.get_notes(resource_type, resource_id, page=5)
         self.assertEqual(result, parse.return_value)
-        request.assert_called_once_with(utils.RETRIEVE, 'notes', {'resource_type': 'deal', 'resource_id': 55, 'page': 5})
+        request.assert_called_once_with(utils.RETRIEVE, 'notes', {'resource_type': 'deal', 'resource_id': 55, 'page': 5})  # noqa
         parse.assert_called_once_with(request.return_value)
 
         with self.assertRaises(exceptions.BaseCRMValidationError):
@@ -1046,14 +1049,14 @@ class HelperMethodTests(TestCase):
         with self.assertRaises(exceptions.BaseCRMValidationError):
             helpers.get_notes(resource_type)
 
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_create_note(self, parse, request):
         request.return_value = {
-            'items':[{'id':23, 'content':'hello'},{'id':99, 'content':'world'}],
+            'items': [{'id': 23, 'content': 'hello'}, {'id': 99, 'content': 'world'}],
             'meta': {'count': 2}
         }
-        parse.return_value = [{'id':23, 'content':'hello'},{'id':99, 'content':'world'}]
+        parse.return_value = [{'id': 23, 'content': 'hello'}, {'id': 99, 'content': 'world'}]
         resource_type = 'contact'
         resource_id = 55
         content = "Hi, this is å t€st note"
@@ -1080,8 +1083,8 @@ class HelperMethodTests(TestCase):
         request.assert_called_once_with(utils.CREATE, 'notes', data=data)
         parse.assert_called_once_with(request.return_value)
 
-    @mock.patch('%s.utils.instantiate_if_necessary' % __name__)
-    @mock.patch('%s.helpers.django_apps' % __name__)
+    @mock.patch('basecrm.utils.instantiate_if_necessary')
+    @mock.patch('basecrm.helpers.django_apps')
     def test_get_pipelines(self, _apps, instantiate):
         _app_conf = mock.Mock()
         _app_conf.pipeline = {'id': 6456, 'name': 'default'}
@@ -1089,13 +1092,13 @@ class HelperMethodTests(TestCase):
 
         result = helpers.get_pipelines()
         self.assertEqual(result, _app_conf.pipeline)
-        _apps.get_app_config.assert_called_once_with('django_basecrm')
+        _apps.get_app_config.assert_called_once_with('basecrm')
         instantiate.assert_called_once()
 
-    @mock.patch('%s.helpers.get_stages_from_api' % __name__)
-    @mock.patch('%s.helpers.base_settings' % __name__)
-    @mock.patch('%s.apps.BaseCRMConfig.instantiate_stages' % __name__)
-    @mock.patch('%s.helpers.django_apps' % __name__)
+    @mock.patch('basecrm.helpers.get_stages_from_api')
+    @mock.patch('basecrm.helpers.base_settings')
+    @mock.patch('basecrm.apps.BaseCRMConfig.instantiate_stages')
+    @mock.patch('basecrm.helpers.django_apps')
     def test_get_stages(self, _apps, instantiate, settings, get_from_api):
         settings.BASECRM_CACHE_STAGES = True
         _app_conf = mock.Mock()
@@ -1105,7 +1108,7 @@ class HelperMethodTests(TestCase):
 
         result = helpers.get_stages()
         self.assertEqual(result, _app_conf.stages)
-        _apps.get_app_config.assert_called_once_with('django_basecrm')
+        _apps.get_app_config.assert_called_once_with('basecrm')
         instantiate.assert_called_once()
         self.assertFalse(get_from_api.called)
 
@@ -1119,10 +1122,10 @@ class HelperMethodTests(TestCase):
         self.assertFalse(instantiate.called)
         get_from_api.assert_called_once()
 
-    @mock.patch('%s.helpers.get_users_from_api' % __name__)
-    @mock.patch('%s.helpers.base_settings' % __name__)
-    @mock.patch('%s.apps.BaseCRMConfig.instantiate_users' % __name__)
-    @mock.patch('%s.helpers.django_apps' % __name__)
+    @mock.patch('basecrm.helpers.get_users_from_api')
+    @mock.patch('basecrm.helpers.base_settings')
+    @mock.patch('basecrm.apps.BaseCRMConfig.instantiate_users')
+    @mock.patch('basecrm.helpers.django_apps')
     def test_get_users(self, _apps, instantiate, settings, get_from_api):
         settings.BASECRM_CACHE_USERS = True
         _app_conf = mock.Mock()
@@ -1132,7 +1135,7 @@ class HelperMethodTests(TestCase):
 
         result = helpers.get_users()
         self.assertEqual(result, _app_conf.users)
-        _apps.get_app_config.assert_called_once_with('django_basecrm')
+        _apps.get_app_config.assert_called_once_with('basecrm')
         instantiate.assert_called_once()
         self.assertFalse(get_from_api.called)
 
@@ -1146,7 +1149,7 @@ class HelperMethodTests(TestCase):
         self.assertFalse(instantiate.called)
         get_from_api.assert_called_once()
 
-    @mock.patch('%s.helpers.get_stages' % __name__)
+    @mock.patch('basecrm.helpers.get_stages')
     def test_get_stage_ids(self, get_stages):
         get_stages.return_value = [{'id': 8888, 'name': 'New'}, {'id': 9999, 'name': 'In Progress'}]
 
@@ -1154,7 +1157,7 @@ class HelperMethodTests(TestCase):
         self.assertEqual(result, [8888, 9999])
         get_stages.assert_called_once()
 
-    @mock.patch('%s.helpers.get_users' % __name__)
+    @mock.patch('basecrm.helpers.get_users')
     def test_get_user_ids(self, get_users):
         get_users.return_value = [{'id': 8, 'name': 'Albert'}, {'id': 9, 'name': 'Berties'}]
 
@@ -1162,9 +1165,9 @@ class HelperMethodTests(TestCase):
         self.assertEqual(result, [8, 9])
         get_users.assert_called_once()
 
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
-    @mock.patch('%s.utils.count' % __name__)
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
+    @mock.patch('basecrm.utils.count')
     def test_get_pipelines_from_api(self, count, parse, request):
         request.return_value = {
             'items':[{'id':23, 'name':'hello'},{'id':99, 'name':'world'}],
@@ -1197,8 +1200,8 @@ class HelperMethodTests(TestCase):
         count.assert_called_once_with(request.return_value)
         parse.assert_called_once_with(request.return_value)
 
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_get_stages_from_api(self, parse, request):
         request.return_value = {
             'items':[{'id':23, 'name':'new'},{'id':99, 'name':'called in'}],
@@ -1218,8 +1221,8 @@ class HelperMethodTests(TestCase):
         request.assert_called_once_with(utils.RETRIEVE, 'stages', {'id': 456, 'hello': 'world'})
         parse.assert_called_once_with(request.return_value)
 
-    @mock.patch('%s.utils.request' % __name__)
-    @mock.patch('%s.utils.parse' % __name__)
+    @mock.patch('basecrm.utils.request')
+    @mock.patch('basecrm.utils.parse')
     def test_get_users_from_api(self, parse, request):
         request.return_value = {
             'items':[{'id':23, 'name':'Albert'},{'id':99, 'name':'Bertie'}],
@@ -1264,7 +1267,7 @@ class SerializerTests(TestCase):
         self.ExampleContactSerializer = ExampleContactSerializer
         self.ExampleDealSerializer = ExampleDealSerializer
 
-    @mock.patch('%s.serializers.AbstractModelSerializer._self_assign_values' % __name__)
+    @mock.patch('basecrm.serializers.AbstractModelSerializer._self_assign_values')
     def test_init(self, assign):
         self.assertTrue(hasattr(self.serialized_abstract_object, 'instance'))
         self.assertTrue(hasattr(self.serialized_abstract_object, 'base_fields'))
@@ -1293,8 +1296,8 @@ class SerializerTests(TestCase):
             'name': 'Acme Enterprises Inc.'
         })
 
-    @mock.patch('%s.serializers.AbstractModelSerializer._get_field_list' % __name__)
-    @mock.patch('%s.serializers.AbstractModelSerializer._get_value' % __name__)
+    @mock.patch('basecrm.serializers.AbstractModelSerializer._get_field_list')
+    @mock.patch('basecrm.serializers.AbstractModelSerializer._get_value')
     def test_self_assign_values(self, get_value, get_fields):
         get_fields.return_value = ['id', 'name']
         get_value.side_effect = ['Albert Einstein']
@@ -1506,7 +1509,7 @@ class SerializerTests(TestCase):
         result = self.serialized_abstract_object._validate_field('any', 'val')
         self.assertTrue(result)
 
-    @mock.patch('%s.serializers.base_helpers' % __name__)
+    @mock.patch('basecrm.serializers.base_helpers')
     def test_contact_validate_field(self, helpers):
         helpers.get_user_ids.return_value = [111, 222, 333, 444]
 
@@ -1525,7 +1528,7 @@ class SerializerTests(TestCase):
         result = self.serialized_contact._validate_field('owner_id', 444)
         self.assertTrue(result)
 
-    @mock.patch('%s.serializers.base_helpers' % __name__)
+    @mock.patch('basecrm.serializers.base_helpers')
     def test_deal_validate_field(self, helpers):
         helpers.get_user_ids.return_value = [111, 222, 333, 444]
         helpers.get_stage_ids.return_value = [666, 777, 888, 999]
@@ -1561,13 +1564,13 @@ class SerializerTests(TestCase):
 class AppMethodTests(TestCase):
 
     def setUp(self):
-        self.base_app = django_apps.get_app_config('django_basecrm')
+        self.base_app = django_apps.get_app_config('basecrm')
         self.base_app.users = None
         self.base_app.stages = None
         self.base_app.pipeline = None
 
-    @mock.patch('%s.apps.base_settings' % __name__)
-    @mock.patch('%s.apps.BaseCRMConfig.instantiate_objects' % __name__)
+    @mock.patch('basecrm.apps.base_settings')
+    @mock.patch('basecrm.apps.BaseCRMConfig.instantiate_objects')
     def test_ready(self, instantiate_objects, settings):
         settings.BASECRM_CACHE_AT_STARTUP = False
         result = self.base_app.ready()
@@ -1577,7 +1580,7 @@ class AppMethodTests(TestCase):
         result = self.base_app.ready()
         instantiate_objects.assert_called_once()
 
-    @mock.patch('%s.apps.get_pipelines_from_api' % __name__)
+    @mock.patch('basecrm.apps.get_pipelines_from_api')
     def test_instantiate_pipeline(self, get_pipelines):
         get_pipelines.return_value = [{'id': 'one'}, {'id': 'two'}, {'id': 'three'}]
         self.assertEqual(self.base_app.pipeline, None)
@@ -1604,7 +1607,7 @@ class AppMethodTests(TestCase):
         self.base_app.instantiate_pipeline(True)
         self.assertEqual(self.base_app.pipeline, {'id': 'four'})
 
-    @mock.patch('%s.apps.get_stages_from_api' % __name__)
+    @mock.patch('basecrm.apps.get_stages_from_api')
     def test_instantiate_stages(self, get_stages):
         get_stages.return_value = ['A', 'B', 'C']
         self.assertEqual(self.base_app.stages, None)
@@ -1631,7 +1634,7 @@ class AppMethodTests(TestCase):
         self.base_app.instantiate_stages(True)
         get_stages.assert_called_once_with(pipeline_id=99999)
 
-    @mock.patch('%s.apps.get_users_from_api' % __name__)
+    @mock.patch('basecrm.apps.get_users_from_api')
     def test_instantiate_users(self, get_users):
         get_users.return_value = [1, 2, 3]
         self.assertEqual(self.base_app.users, None)
@@ -1652,9 +1655,9 @@ class AppMethodTests(TestCase):
         self.assertEqual(self.base_app.users, [1, 55, 77])
         self.assertEqual(get_users.call_count, 2)
 
-    @mock.patch('%s.apps.BaseCRMConfig.instantiate_stages' % __name__)
-    @mock.patch('%s.apps.BaseCRMConfig.instantiate_pipeline' % __name__)
-    @mock.patch('%s.apps.BaseCRMConfig.instantiate_users' % __name__)
+    @mock.patch('basecrm.apps.BaseCRMConfig.instantiate_stages')
+    @mock.patch('basecrm.apps.BaseCRMConfig.instantiate_pipeline')
+    @mock.patch('basecrm.apps.BaseCRMConfig.instantiate_users')
     def test_instantiate_objects(self, get_users, get_pipelines, get_stages):
         self.base_app.instantiate_objects()
         get_pipelines.assert_called_once()
