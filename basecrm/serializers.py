@@ -23,7 +23,7 @@ class AbstractModelSerializer(object):
             raise exceptions.BaseCRMConfigurationError(
                 "ModelSerializer must be defined with the relevant model on the Meta inner class"
             )
-        if isinstance(self.Meta.model, basestring):
+        if isinstance(self.Meta.model, str):
             try:
                 self.Meta.model = apps.get_model(*self.Meta.model.split('.', 1))
             except Exception:
@@ -105,7 +105,7 @@ class AbstractModelSerializer(object):
             else:
                 # try to get one from the class level
                 val = getattr(self, field_name, None)
-                if val is not None and isinstance(val, basestring):
+                if val is not None and isinstance(val, str):
                     # it's a string - let's check if it's a field mapping
                     instance_val = getattr(self.instance, val, None)
                     if instance_val is not None:

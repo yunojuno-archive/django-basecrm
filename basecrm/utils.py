@@ -294,7 +294,7 @@ def _build_headers(extra_headers=None):
                 u'Parameter format was not a dict as expected. The parameter given was: %s' %
                 repr(extra_headers)
             )
-        for k, v in extra_headers.iteritems():
+        for k, v in extra_headers.items():
             headers[k] = v
 
     return headers
