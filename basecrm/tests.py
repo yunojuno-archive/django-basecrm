@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-from unittest import mock
 import types
 
 from django.apps import apps as django_apps
 from django.test import TestCase
 from django.db.models.base import ModelBase
 
-from . import (
-    apps,  # noqa used for patching
+from . import (   # noqa apps used for patching
+    apps,
     exceptions,
     helpers,
     serializers,
     settings,
     utils
 )
+from .compat import mock
 
 
 class RequestWrapperTests(TestCase):

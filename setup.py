@@ -12,7 +12,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name="django-basecrm",
-    version="0.5.0-dev",
+    version="0.5",
     packages=find_packages(),
     install_requires=REQUIREMENTS,
     include_package_data=True,
@@ -21,14 +21,15 @@ setup(
     url='https://github.com/yunojuno/django-basecrm',
     author='YunoJuno',
     author_email='code@yunojuno.com',
-    maintainer='Hugo Rodger-Brown',
-    maintainer_email='hugo@yunojuno.com',
+    maintainer='YunoJuno',
+    maintainer_email='code@yunojuno.com',
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.6',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
