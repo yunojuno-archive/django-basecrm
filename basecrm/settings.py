@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.conf import settings
 
 BASECRM_API_URL = getattr(settings, 'BASECRM_API_URL', 'https://api.getbase.com/v2/')

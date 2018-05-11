@@ -10,6 +10,8 @@ Django Basecrm
 
 A Django app that connects to the `BaseCRM API <https://dev.futuresimple.com/>`_ (v2)
 
+**This package is now Python3 only, and supports Django 1.11 and above. For previous versions please refer to the Python2 branch.**
+
 A lightweight Django app to wrap the `requests <http://docs.python-requests.org/en/latest/>`_ library and provide easy endpoints for the BaseCRM API.
 
 Note that this is not a **complete** client SDK; it's a helper app that has the functionality we needed. Contributions gratefully accepted.
