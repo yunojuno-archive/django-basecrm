@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 import types
+from unittest import mock
 
 from django.apps import apps as django_apps
 from django.test import TestCase
@@ -13,7 +13,6 @@ from . import (   # noqa apps used for patching
     settings,
     utils
 )
-from .compat import mock
 
 
 class RequestWrapperTests(TestCase):

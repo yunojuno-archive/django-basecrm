@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from django.apps import apps as django_apps
 
 from . import utils, exceptions, settings
