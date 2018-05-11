@@ -3,9 +3,6 @@ import os
 from setuptools import setup, find_packages
 
 README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
-# requirements.txt must be included in MANIFEST.in and include_package_data must be True
-# in order for this to work; ensures that tox can use the setup to enforce requirements
-REQUIREMENTS = '\n'.join(open(os.path.join(os.path.dirname(__file__), 'requirements.txt')).readlines())  # noqa
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
