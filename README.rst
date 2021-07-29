@@ -1,16 +1,9 @@
-.. image:: https://badge.fury.io/py/django-basecrm.svg
-    :target: https://badge.fury.io/py/django-basecrm
-
-.. image:: https://travis-ci.org/yunojuno/django-basecrm.svg?branch=master
-    :target: https://travis-ci.org/yunojuno/django-basecrm
-
-==============
 Django Basecrm
 ==============
 
-A Django app that connects to the `BaseCRM API <https://dev.futuresimple.com/>`_ (v2)
+**2021-07-29: This package is no longer actively maintained.**
 
-**This package is now Python3 only, and supports Django 1.11 and above. For previous versions please refer to the Python2 branch.**
+A Django app that connects to the `BaseCRM API <https://dev.futuresimple.com/>`_ (v2)
 
 A lightweight Django app to wrap the `requests <http://docs.python-requests.org/en/latest/>`_ library and provide easy endpoints for the BaseCRM API.
 
